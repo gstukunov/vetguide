@@ -1,0 +1,73 @@
+# Kubernetes конфигурация для Colima
+# Этот файл содержит настройки для работы с локальным Kubernetes кластером в Colima
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: colima-k8s-config
+  namespace: kube-system
+data:
+  # Конфигурация для Colima
+  colima-profile: "k8s"
+  colima-cpu: "6"
+  colima-memory: "12"
+  colima-disk: "150"
+
+  # Настройки для VetGuide
+  app-name: "vetguide"
+  app-version: "1.0.0"
+
+  # Настройки сети
+  cluster-domain: "cluster.local"
+  service-cidr: "10.96.0.0/12"
+  pod-cidr: "10.244.0.0/16"
+
+  # Настройки DNS
+  dns-server: "8.8.8.8"
+  dns-fallback: "8.8.4.4"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vetguide-colima-config
+  namespace: vetguide
+data:
+  # Конфигурация для работы с Colima
+  NODE_ENV: "development"
+  CLUSTER_TYPE: "colima"
+
+  # Настройки для разработки
+  DEBUG: "true"
+  LOG_LEVEL: "debug"
+
+  # Настройки MinIO для Colima
+  MINIO_ENDPOINT: "http://minio-service:9000"
+  MINIO_USE_SSL: "false"
+
+  # Настройки базы данных
+  DB_HOST: "postgres-service"
+  DB_PORT: "5432"
+
+  # Настройки приложения
+  APP_PORT: "3001"
+  UI_PORT: "3000"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vetguide-colima-secrets
+  namespace: vetguide
+type: Opaque
+data:
+  # Секреты для разработки в Colima
+  DB_USERNAME: cG9zdGdyZXM= # postgres
+  DB_PASSWORD: ZGV2cGFzc3dvcmQ= # devpassword
+  JWT_SECRET: ZGV2LWp3dC1zZWNyZXQ= # dev-jwt-secret
+  JWT_REFRESH_SECRET: ZGV2LWp3dC1yZWZyZXNoLXNlY3JldA== # dev-jwt-refresh-secret
+  MINIO_ROOT_USER: bWluaW9hZG1pbg== # minioadmin
+  MINIO_ROOT_PASSWORD: bWluaW9hZG1pbg== # minioadmin
+  SMS_API_KEY: ZGV2LXNtcy1rZXk= # dev-sms-key
+  SMS_API_SECRET: ZGV2LXNtcy1zZWNyZXQ= # dev-sms-secret
+

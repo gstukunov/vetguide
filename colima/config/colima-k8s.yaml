@@ -1,0 +1,38 @@
+# Colima конфигурация для Kubernetes тестирования VetGuide
+# Использование: colima start --config colima/config/colima-k8s.yaml
+
+profile: k8s
+arch: host
+runtime: docker
+kubernetes:
+  enabled: true
+  version: v1.28.0
+  k3sVersion: v1.28.0+k3s1
+  disable: false
+network:
+  address: true
+  dns: []
+  host_resolver: true
+layer: false
+mountType: 9p
+mounts:
+  - location: /Users/grigorystukunov/vsProj/vetguide
+    writable: true
+    ignore: false
+    propagation: rshared
+    selinux: false
+    options: []
+cpu: 6
+memory: 12
+disk: 150
+vmType: qemu
+rosetta: false
+hostResolver: true
+autoActivate: true
+dns: []
+env: {}
+sshConfig: true
+sshAgent: true
+forwardAgent: false
+copyKubeconfig: true
+

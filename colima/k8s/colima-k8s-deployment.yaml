@@ -1,0 +1,250 @@
+# Kubernetes развертывание для Colima
+# Адаптированные манифесты для работы с локальным Kubernetes кластером
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vetguide-api-colima
+  namespace: vetguide
+  labels:
+    app: vetguide-api
+    environment: colima
+spec:
+  replicas: 1 # Один реплика для Colima
+  selector:
+    matchLabels:
+      app: vetguide-api
+  template:
+    metadata:
+      labels:
+        app: vetguide-api
+        environment: colima
+    spec:
+      containers:
+        - name: vetguide-api
+          image: vetguide-api:latest
+          ports:
+            - containerPort: 3001
+          env:
+            # Конфигурация из ConfigMap
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: vetguide-colima-config
+                  key: NODE_ENV
+            - name: CLUSTER_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: vetguide-colima-config
+                  key: CLUSTER_TYPE
+            - name: DEBUG
+              valueFrom:
+                configMapKeyRef:
+                  name: vetguide-colima-config
+                  key: DEBUG
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: vetguide-colima-config
+                  key: LOG_LEVEL
+            # База данных
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: vetguide-colima-config
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: vetguide-colima-config
+                  key: DB_PORT
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: vetguide-colima-secrets
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: vetguide-colima-secrets
+                  key: DB_PASSWORD
+            - name: DB_DATABASE
+              value: "vetguide_dev"
+            # JWT
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: vetguide-colima-secrets
+                  key: JWT_SECRET
+            - name: JWT_REFRESH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: vetguide-colima-secrets
+                  key: JWT_REFRESH_SECRET
+            - name: JWT_EXPIRES_IN
+              value: "15m"
+            - name: JWT_REFRESH_EXPIRES_IN
+              value: "7d"
+            # SMS
+            - name: SMS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: vetguide-colima-secrets
+                  key: SMS_API_KEY
+            - name: SMS_API_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: vetguide-colima-secrets
+                  key: SMS_API_SECRET
+            # MinIO
+            - name: MINIO_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: vetguide-colima-config
+                  key: MINIO_ENDPOINT
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: vetguide-colima-secrets
+                  key: MINIO_ROOT_USER
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: vetguide-colima-secrets
+                  key: MINIO_ROOT_PASSWORD
+            - name: MINIO_BUCKET
+              value: "vetguide-uploads"
+            - name: MINIO_REGION
+              value: "us-east-1"
+            - name: MINIO_USE_SSL
+              valueFrom:
+                configMapKeyRef:
+                  name: vetguide-colima-config
+                  key: MINIO_USE_SSL
+            # Приложение
+            - name: APP_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: vetguide-colima-config
+                  key: APP_PORT
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /api
+              port: 3001
+            initialDelaySeconds: 40
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api
+              port: 3001
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vetguide-ui-colima
+  namespace: vetguide
+  labels:
+    app: vetguide-ui
+    environment: colima
+spec:
+  replicas: 1 # Один реплика для Colima
+  selector:
+    matchLabels:
+      app: vetguide-ui
+  template:
+    metadata:
+      labels:
+        app: vetguide-ui
+        environment: colima
+    spec:
+      containers:
+        - name: vetguide-ui
+          image: vetguide-ui:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: vetguide-colima-config
+                  key: NODE_ENV
+            - name: NEXT_TELEMETRY_DISABLED
+              value: "1"
+            - name: PORT
+              value: "3000"
+            - name: HOSTNAME
+              value: "0.0.0.0"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vetguide-api-colima-service
+  namespace: vetguide
+  labels:
+    app: vetguide-api
+    environment: colima
+spec:
+  selector:
+    app: vetguide-api
+  ports:
+    - port: 3001
+      targetPort: 3001
+      protocol: TCP
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vetguide-ui-colima-service
+  namespace: vetguide
+  labels:
+    app: vetguide-ui
+    environment: colima
+spec:
+  selector:
+    app: vetguide-ui
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+  type: ClusterIP
+

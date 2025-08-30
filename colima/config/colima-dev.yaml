@@ -1,0 +1,38 @@
+# Colima конфигурация для разработки VetGuide
+# Использование: colima start --config colima/config/colima-dev.yaml
+
+profile: dev
+arch: host
+runtime: docker
+kubernetes:
+  enabled: false
+  version: ""
+  k3sVersion: ""
+  disable: false
+network:
+  address: true
+  dns: []
+  host_resolver: true
+layer: false
+mountType: 9p
+mounts:
+  - location: /Users/grigorystukunov/vsProj/vetguide
+    writable: true
+    ignore: false
+    propagation: rshared
+    selinux: false
+    options: []
+cpu: 4
+memory: 8
+disk: 100
+vmType: qemu
+rosetta: false
+hostResolver: true
+autoActivate: true
+dns: []
+env: {}
+sshConfig: true
+sshAgent: true
+forwardAgent: false
+copyKubeconfig: true
+
