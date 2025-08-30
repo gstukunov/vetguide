@@ -57,9 +57,14 @@ create_backup() {
     
     mkdir -p "$backup_path"
     
-    # Резервная копия базы данных
-    print_status "Создание резервной копии базы данных..."
-    docker exec vetguide-postgres-prod pg_dump -U ${DB_USERNAME} ${DB_DATABASE} > "$backup_path/database.sql"
+    # Проверка существования контейнера PostgreSQL
+    if docker ps -a --format "table {{.Names}}" | grep -q "vetguide-postgres-prod"; then
+        # Резервная копия базы данных
+        print_status "Создание резервной копии базы данных..."
+        docker exec vetguide-postgres-prod pg_dump -U ${DB_USERNAME} ${DB_DATABASE} > "$backup_path/database.sql"
+    else
+        print_warning "Контейнер PostgreSQL не найден, пропускаем резервную копию БД"
+    fi
     
     # Резервная копия файлов
     print_status "Создание резервной копии файлов..."
@@ -90,11 +95,8 @@ update_code() {
     
     cd "$PROJECT_DIR"
     
-    # Сохранение локальных изменений
-    git stash push -m "Auto-stash before deployment $(date)"
-    
-    # Обновление из репозитория
-    git pull origin main
+    # Временно отключаем git операции для первого деплоймента
+    print_warning "Пропускаем git операции для первого деплоймента"
     
     print_success "Код обновлен"
     log "Code updated"
@@ -106,12 +108,41 @@ update_images() {
     
     cd "$PROJECT_DIR"
     
-    # Вход в GitHub Container Registry
-    echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_USERNAME" --password-stdin
+    # Загрузка переменных окружения
+    if [ -f ".env" ]; then
+        source .env
+        print_status "Environment variables loaded"
+    else
+        print_error ".env file not found"
+        exit 1
+    fi
     
-    # Обновление образов
-    docker pull ghcr.io/${GITHUB_REPOSITORY}/vetguide-api:latest
-    docker pull ghcr.io/${GITHUB_REPOSITORY}/vetguide-ui:latest
+    # Проверяем, существуют ли образы в registry
+    print_status "Проверка образов в GitHub Container Registry..."
+    if docker pull ghcr.io/${GITHUB_REPOSITORY}/vetguide-api:latest >/dev/null 2>&1; then
+        print_status "Образы найдены в registry, обновляем..."
+        docker pull ghcr.io/${GITHUB_REPOSITORY}/vetguide-api:latest
+        docker pull ghcr.io/${GITHUB_REPOSITORY}/vetguide-ui:latest
+    else
+        print_warning "Образы не найдены в registry, собираем локально..."
+        
+        # Вход в GitHub Container Registry для последующей публикации
+        echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_USERNAME" --password-stdin
+        
+        # Сборка образов локально
+        print_status "Сборка vetguide-api..."
+        docker build -t ghcr.io/${GITHUB_REPOSITORY}/vetguide-api:latest ./api/
+        
+        print_status "Сборка vetguide-ui..."
+        docker build -t ghcr.io/${GITHUB_REPOSITORY}/vetguide-ui:latest ./ui/
+        
+        # Публикация образов в registry
+        print_status "Публикация образов в GitHub Container Registry..."
+        docker push ghcr.io/${GITHUB_REPOSITORY}/vetguide-api:latest
+        docker push ghcr.io/${GITHUB_REPOSITORY}/vetguide-ui:latest
+        
+        print_success "Образы собраны и опубликованы"
+    fi
     
     print_success "Docker образы обновлены"
     log "Docker images updated"

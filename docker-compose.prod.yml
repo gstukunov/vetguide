@@ -1,5 +1,5 @@
 # Production Docker Compose для сервера
-version: "3.8"
+version: "2.2"
 
 services:
   # PostgreSQL Database
@@ -23,15 +23,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-          cpus: "1.0"
-        reservations:
-          memory: 512M
-          cpus: "0.5"
-
   # MinIO S3 Storage
   minio:
     image: minio/minio:latest
@@ -53,15 +44,6 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-          cpus: "1.0"
-        reservations:
-          memory: 512M
-          cpus: "0.5"
-
   # MinIO Client for bucket setup
   minio-setup:
     image: minio/mc:latest
@@ -102,7 +84,7 @@ services:
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
       MINIO_BUCKET: ${MINIO_BUCKET:-vetguide-uploads}
       MINIO_REGION: ${MINIO_REGION:-us-east-1}
-      MINIO_USE_SSL: false
+      MINIO_USE_SSL: "false"
     volumes:
       - app_uploads_prod:/app/uploads
     depends_on:
@@ -123,22 +105,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
-    deploy:
-      replicas: 2
-      resources:
-        limits:
-          memory: 1G
-          cpus: "1.0"
-        reservations:
-          memory: 512M
-          cpus: "0.5"
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-
   # Next.js UI Application
   ui:
     image: ghcr.io/${GITHUB_REPOSITORY}/vetguide-ui:latest
@@ -154,30 +120,14 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 30s
-    deploy:
-      replicas: 2
-      resources:
-        limits:
-          memory: 512M
-          cpus: "0.5"
-        reservations:
-          memory: 256M
-          cpus: "0.25"
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-
   # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
     container_name: vetguide-nginx-prod
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:80"
+      # - "443:443"  # Commented out due to port conflict with system nginx
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
@@ -192,15 +142,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-          cpus: "0.25"
-        reservations:
-          memory: 128M
-          cpus: "0.1"
-
 volumes:
   postgres_prod_data:
     driver: local
