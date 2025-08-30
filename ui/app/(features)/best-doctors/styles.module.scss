@@ -1,0 +1,67 @@
+.bestDoctors {
+  padding: 40px 0;
+  width: 100%;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary-color-text);
+  margin-bottom: 40px;
+  text-align: left;
+}
+
+.doctorsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin: 0 auto;
+  justify-content: center;
+  max-width: 1400px;
+}
+
+.loading,
+.error,
+.empty {
+  text-align: center;
+  padding: 40px;
+  font-size: 1.1rem;
+  color: var(--primary-color-icon);
+}
+
+.error {
+  color: #e74c3c;
+}
+
+// Responsive design
+@media (max-width: 1024px) {
+  .doctorsGrid {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .bestDoctors {
+    padding: 20px 16px;
+  }
+
+  .title {
+    font-size: 2rem;
+    margin-bottom: 24px;
+  }
+
+  .doctorsGrid {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bestDoctors {
+    padding: 0;
+  }
+
+  .title {
+    font-size: 1.75rem;
+  }
+}

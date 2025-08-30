@@ -1,0 +1,15 @@
+.timerOrResend {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.timer {
+  color: var(--primary-color-hint);
+  font-size: 14px;
+  text-align: center;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}

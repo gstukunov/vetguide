@@ -1,0 +1,192 @@
+.doctorCard {
+  background-color: var(--tertiary-color-bg);
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 30px;
+  max-width: 800px;
+  flex: 1 1 calc(50% - 12px);
+  min-width: 300px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.avatar {
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #daeaf833;
+  flex-shrink: 0;
+  padding: 20px;
+
+  svg {
+    height: 100%;
+  }
+}
+
+.doctorInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.doctorNameAndRating {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nameAndRating {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.doctorName {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--primary-color-text);
+  margin: 0;
+  flex: 1;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.star {
+  color: #000;
+  font-size: 1rem;
+}
+
+.ratingValue {
+  font-size: 0.9rem;
+  color: var(--primary-color-icon);
+  font-weight: 500;
+}
+
+.specialization {
+  font-size: 1rem;
+  color: var(--primary-color-icon);
+  margin: 0;
+  font-weight: 400;
+}
+
+.clinicInfo {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+  //   gap: 4px;
+}
+
+.clinicNameAndAddress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.clinicName {
+  font-size: 0.9rem;
+  color: var(--primary-color-icon);
+  margin: 0;
+  font-weight: 600;
+}
+
+.clinicAddress {
+  font-size: 0.85rem;
+  color: var(--primary-color-icon);
+  margin: 0;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.bookButton {
+  align-self: flex-end;
+  background-color: #d4edda;
+  color: #2c3e50;
+  width: 140px;
+  height: 55px;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 24px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #c3e6cb;
+  }
+
+  &:active {
+    background-color: #b8dfc1;
+  }
+}
+
+// Responsive design
+@media (max-width: 1300px) {
+  .doctorCard {
+    padding: 20px;
+    flex: 1 1 100%;
+    min-width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .doctorCard {
+    padding: 20px;
+    flex: 1 1 100%;
+    min-width: unset;
+    max-width: unset;
+  }
+
+  .nameAndRating {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .bookButton {
+    align-self: stretch;
+  }
+}
+
+@media (max-width: 480px) {
+  .doctorCard {
+    padding: 16px;
+    gap: 10px;
+  }
+
+  .avatar {
+    width: 100px;
+    height: auto;
+    padding: 0;
+
+    svg {
+      width: 100%;
+    }
+  }
+  .bookButton {
+    display: none;
+  }
+
+  .doctorName {
+    font-size: 1.1rem;
+  }
+}

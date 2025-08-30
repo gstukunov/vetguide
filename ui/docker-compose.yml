@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  vetguide-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+    command: npm run dev
+    stdin_open: true
+    tty: true
+    networks:
+      - vetguide-network
+
+networks:
+  vetguide-network:
+    driver: bridge

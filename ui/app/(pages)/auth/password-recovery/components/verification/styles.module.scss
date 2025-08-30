@@ -1,0 +1,12 @@
+.timerOrResend {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.timer {
+  font-size: 0.9rem;
+  color: var(--primary-color-icon);
+  text-align: center;
+}

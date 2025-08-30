@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  vetguide-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    restart: unless-stopped
+    networks:
+      - vetguide-network
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - vetguide-ui
+    restart: unless-stopped
+    networks:
+      - vetguide-network
+
+networks:
+  vetguide-network:
+    driver: bridge
