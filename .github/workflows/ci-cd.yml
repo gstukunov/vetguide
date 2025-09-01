@@ -27,37 +27,37 @@ jobs:
           node-version: "20"
           cache: "npm"
           cache-dependency-path: |
-            vetguide-api/package-lock.json
-            vetguide-ui/package-lock.json
+            api/package-lock.json
+            ui/package-lock.json
 
       # Тестирование API
       - name: Install API dependencies
-        working-directory: ./vetguide-api
+        working-directory: ./api
         run: npm ci
 
       - name: Run API tests
-        working-directory: ./vetguide-api
+        working-directory: ./api
         run: npm test
         env:
           NODE_ENV: test
 
       - name: Build API
-        working-directory: ./vetguide-api
+        working-directory: ./api
         run: npm run build
 
       # Тестирование UI
       - name: Install UI dependencies
-        working-directory: ./vetguide-ui
+        working-directory: ./ui
         run: npm ci
 
       - name: Run UI tests
-        working-directory: ./vetguide-ui
+        working-directory: ./ui
         run: npm test
         env:
           NODE_ENV: test
 
       - name: Build UI
-        working-directory: ./vetguide-ui
+        working-directory: ./ui
         run: npm run build
 
   # Сборка и публикация Docker образов
@@ -99,7 +99,7 @@ jobs:
       - name: Build and push API image
         uses: docker/build-push-action@v5
         with:
-          context: ./vetguide-api
+          context: ./api
           push: true
           tags: ${{ steps.meta-api.outputs.tags }}
           labels: ${{ steps.meta-api.outputs.labels }}
@@ -121,71 +121,23 @@ jobs:
       - name: Build and push UI image
         uses: docker/build-push-action@v5
         with:
-          context: ./vetguide-ui
+          context: ./ui
           push: true
           tags: ${{ steps.meta-ui.outputs.tags }}
           labels: ${{ steps.meta-ui.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Деплоймент на сервер
-  deploy:
+  # Уведомление о готовности к деплою
+  notify-deploy-ready:
     runs-on: ubuntu-latest
     needs: build-and-push
     if: github.ref == 'refs/heads/main'
-    environment: production
-
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy to server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: ${{ secrets.SERVER_PORT }}
-          script: |
-            # Переход в директорию проекта
-            cd /opt/vetguide
-
-            # Обновление кода
-            git pull origin main
-
-            # Остановка текущих контейнеров
-            docker-compose -f docker-compose.prod.yml down
-
-            # Обновление образов
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:latest
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_UI }}:latest
-
-            # Запуск новых контейнеров
-            docker-compose -f docker-compose.prod.yml up -d
-
-            # Очистка старых образов
-            docker image prune -f
-
-            # Проверка статуса
-            docker-compose -f docker-compose.prod.yml ps
-
-      - name: Health check
+      - name: Notify deployment ready
         run: |
-          echo "Waiting for services to start..."
-          sleep 30
-
-          # Проверка API
-          if curl -f http://${{ secrets.SERVER_HOST }}/api/health; then
-            echo "✅ API is healthy"
-          else
-            echo "❌ API health check failed"
-            exit 1
-          fi
-
-          # Проверка UI
-          if curl -f http://${{ secrets.SERVER_HOST }}/; then
-            echo "✅ UI is healthy"
-          else
-            echo "❌ UI health check failed"
-            exit 1
-          fi
+          echo "🚀 New images pushed to registry!"
+          echo "📦 API: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:latest"
+          echo "�� UI: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_UI }}:latest"
+          echo "🔄 Watchtower will automatically update containers"

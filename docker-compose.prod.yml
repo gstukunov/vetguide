@@ -1,5 +1,4 @@
-# Production Docker Compose для сервера
-version: "2.2"
+version: '3.8'
 
 services:
   # PostgreSQL Database
@@ -12,10 +11,10 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "127.0.0.1:5432:5432" # Только локальный доступ
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_prod_data:/var/lib/postgresql/data
-      - ./vetguide-api/scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
     networks:
       - vetguide-prod-network
     healthcheck:
@@ -23,14 +22,15 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
   # MinIO S3 Storage
   minio:
     image: minio/minio:latest
     container_name: vetguide-minio-prod
     restart: unless-stopped
     ports:
-      - "127.0.0.1:9000:9000" # Только локальный доступ
-      - "127.0.0.1:9001:9001" # Только локальный доступ
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
@@ -44,6 +44,7 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
+
   # MinIO Client for bucket setup
   minio-setup:
     image: minio/mc:latest
@@ -79,6 +80,7 @@ services:
       JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
       SMS_API_KEY: ${SMS_API_KEY}
       SMS_API_SECRET: ${SMS_API_SECRET}
+      SMS_API_URL: ${SMS_API_URL}
       MINIO_ENDPOINT: http://minio:9000
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
@@ -105,6 +107,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
   # Next.js UI Application
   ui:
     image: ghcr.io/${GITHUB_REPOSITORY}/vetguide-ui:latest
@@ -120,6 +123,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
   # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
@@ -127,7 +131,6 @@ services:
     restart: unless-stopped
     ports:
       - "8080:80"
-      # - "443:443"  # Commented out due to port conflict with system nginx
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
@@ -142,6 +145,30 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
+  # Watchtower для автоматического обновления (без email уведомлений)
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: vetguide-watchtower
+    restart: unless-stopped
+    environment:
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_INCLUDE_STOPPED: "true"
+      WATCHTOWER_REVIVE_STOPPED: "true"
+      WATCHTOWER_POLL_INTERVAL: 300
+      WATCHTOWER_LABEL_ENABLE: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: >
+      --label-enable
+      --cleanup
+      --include-stopped
+      --revive-stopped
+      --interval 300
+      vetguide-api-prod vetguide-ui-prod
+    networks:
+      - vetguide-prod-network
+
 volumes:
   postgres_prod_data:
     driver: local
@@ -153,4 +180,3 @@ volumes:
 networks:
   vetguide-prod-network:
     driver: bridge
-
