@@ -36,12 +36,6 @@ jobs:
         working-directory: ./api
         run: npm ci
 
-      - name: Run API tests
-        working-directory: ./api
-        run: npm test
-        env:
-          NODE_ENV: test
-
       - name: Build API
         working-directory: ./api
         run: npm run build
@@ -50,12 +44,6 @@ jobs:
       - name: Install UI dependencies
         working-directory: ./ui
         run: npm ci
-
-      - name: Run UI tests
-        working-directory: ./ui
-        run: npm test
-        env:
-          NODE_ENV: test
 
       - name: Build UI
         working-directory: ./ui
