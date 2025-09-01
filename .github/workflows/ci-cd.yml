@@ -15,6 +15,7 @@ jobs:
   # Тестирование и сборка
   test-and-build:
     runs-on: ubuntu-latest
+    # Запускается для всех событий: push в main/develop, PR в main
     if: github.event_name == 'pull_request' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
 
     steps:
@@ -64,6 +65,7 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     needs: test-and-build
+    # Запускается для push в main/develop (включая merge)
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
 
     permissions:
@@ -136,6 +138,7 @@ jobs:
   notify-deploy-ready:
     runs-on: ubuntu-latest
     needs: build-and-push
+    # Запускается только для push в main (включая merge)
     if: github.ref == 'refs/heads/main'
     
     steps:
@@ -146,3 +149,12 @@ jobs:
           echo " UI: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_UI }}:latest"
           echo "🔄 Watchtower will automatically update containers"
           echo "⏰ Next update check in 5 minutes"
+          
+      - name: Show deployment info
+        run: |
+          echo "## �� Deployment Summary"
+          echo "**Branch:** ${{ github.ref_name }}"
+          echo "**Commit:** ${{ github.sha }}"
+          echo "**Author:** ${{ github.actor }}"
+          echo "**Event:** ${{ github.event_name }}"
+          echo "**Triggered by:** ${{ github.event.head_commit.message }}"
