@@ -1,13 +1,13 @@
 import { FC } from 'react';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 import { useHydration } from '@/(shared)/hooks';
 import Button from '@/(shared)/ui/button';
 import useAuthStore from '@/(stores)/auth';
 
 import styles from './styles.module.scss';
-import { useRouter } from 'next/navigation';
 
 export const AboutService: FC = () => {
   const { isAuthenticated } = useAuthStore();

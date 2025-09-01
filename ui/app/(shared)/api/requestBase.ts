@@ -67,11 +67,13 @@ axiosInstance.interceptors.response.use(
         url: originalRequest.url,
         isRetry: originalRequest._retry,
         isRefreshing,
-        hasRefreshToken: !!getRefreshToken()
+        hasRefreshToken: !!getRefreshToken(),
       });
 
       if (originalRequest.url?.includes('/auth/refresh')) {
-        console.log('[Auth Interceptor] Refresh token request failed, clearing auth data');
+        console.log(
+          '[Auth Interceptor] Refresh token request failed, clearing auth data'
+        );
         clearAuthData();
         return Promise.reject(error);
       }
@@ -98,7 +100,9 @@ axiosInstance.interceptors.response.use(
       if (originalRequest._retry) {
         retryCount++;
         if (retryCount >= MAX_RETRIES) {
-          console.log('[Auth Interceptor] Max retries reached, clearing auth data');
+          console.log(
+            '[Auth Interceptor] Max retries reached, clearing auth data'
+          );
           clearAuthData();
           retryCount = 0;
         }
