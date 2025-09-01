@@ -74,6 +74,7 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+          logout: true
 
       # Сборка и публикация API образа
       - name: Extract metadata for API
