@@ -34,7 +34,7 @@
       gap: 90px;
 
       .searchHeading {
-        font-size: 70px;
+        font-size: 58px;
         font-weight: bold;
         max-width: 708px;
         line-height: 90%;
@@ -57,7 +57,8 @@
         font-weight: 500;
         @media (max-width: 1024px) {
           font-size: 34px;
-          font-weight: bold;
+          line-height: 90%;
+          font-weight: 700;
         }
       }
     }
