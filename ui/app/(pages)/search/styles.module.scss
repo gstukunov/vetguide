@@ -15,67 +15,16 @@
     max-width: 1440px;
     width: 100%;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 40px;
-  }
-  .searchWithInput {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    gap: 40px;
+    min-height: 100vh;
+    @media (max-width: 1024px) {
+    }
     @media (max-width: 480px) {
-      gap: 30px;
-    }
-    .searchHeading {
-      font-size: 58px;
-      max-width: 740px;
-      font-weight: bold;
-      line-height: 90%;
-      @media (max-width: 480px) {
-        display: none;
-      }
-    }
-    .searchHeadingMobile {
-      font-size: 34px;
-      font-weight: bold;
-      line-height: 90%;
-      @media (min-width: 480px) {
-        display: none;
-      }
-    }
-
-    .searchInput {
-      height: 70px;
-      background-color: var(--tertiary-color);
-      @media (max-width: 480px) {
-        height: 40px;
-      }
-    }
-    .searchIcon {
-      @media (max-width: 480px) {
-        width: 18px;
-        height: 18px;
-      }
-    }
-    .inputLabel {
-      font-size: 22px;
-      font-weight: 500;
-      @media (max-width: 1024px) {
-        font-size: 34px;
-        line-height: 90%;
-        font-weight: 700;
-      }
+      min-height: auto;
+      gap: 20px;
     }
   }
-}
-
-.doctorsGrid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-  margin: 0 auto;
-  justify-content: center;
-  max-width: 1400px;
 }
 
 .headerBlock {
@@ -89,5 +38,8 @@
     @media (max-width: 520px) {
       padding: 7px 16px;
     }
+  }
+  @media (max-width: 480px) {
+    margin-bottom: 25px;
   }
 }

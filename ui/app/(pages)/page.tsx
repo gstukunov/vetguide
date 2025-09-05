@@ -4,8 +4,7 @@ import { FC, useRef } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { AboutService } from '@/(features)/about-service';
-import { BestDoctors } from '@/(features)/best-doctors';
+import { AboutService, BestDoctors } from '@/(features)/main-page';
 import { AuthIcon } from '@/(shared)/icons/auth';
 import { SearchIcon } from '@/(shared)/icons/search';
 import { Footer } from '@/(shared)/ui/footer';

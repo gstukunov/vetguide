@@ -188,7 +188,13 @@ describe('SearchService', () => {
 
       const result = await service.searchByType(query, SearchType.DOCTORS);
 
-      expect(result).toEqual(doctors);
+      expect(result).toEqual({
+        doctors,
+        clinics: [],
+        totalDoctors: 1,
+        totalClinics: 0,
+        totalResults: 1,
+      });
       expect(service.searchDoctorsOnly).toHaveBeenCalledWith(query);
     });
 
@@ -200,7 +206,13 @@ describe('SearchService', () => {
 
       const result = await service.searchByType(query, SearchType.CLINICS);
 
-      expect(result).toEqual(clinics);
+      expect(result).toEqual({
+        doctors: [],
+        clinics,
+        totalDoctors: 0,
+        totalClinics: 1,
+        totalResults: 1,
+      });
       expect(service.searchClinicsOnly).toHaveBeenCalledWith(query);
     });
 

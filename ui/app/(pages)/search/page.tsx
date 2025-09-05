@@ -11,19 +11,20 @@ import {
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import { SearchHeader, SearchResults } from '@/(features)/search-page';
 import { useSearch } from '@/(shared)/api/hooks/search';
-import { SearchIcon } from '@/(shared)/icons/search';
-import { DoctorCard } from '@/(shared)/ui/doctor-card';
 import { Footer } from '@/(shared)/ui/footer';
 import Header from '@/(shared)/ui/header';
-import { Input } from '@/(shared)/ui/inputs';
 
 import styles from './styles.module.scss';
+
+type SearchType = 'all' | 'doctors' | 'clinics';
 
 const SearchPage = () => {
   const params = useSearchParams();
   const router = useRouter();
   const q = params.get('q') || '';
+  const typeParam = (params.get('type') as SearchType) || 'all';
 
   const [localQuery, setLocalQuery] = useState(q);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -34,13 +35,16 @@ const SearchPage = () => {
 
   const enabled = useMemo(() => Boolean(q.trim()), [q]);
 
-  const { data, isLoading, isError } = useSearch(q, enabled);
+  const { data, isLoading, isError } = useSearch(q, enabled, typeParam);
 
   const commitSearch = useCallback(
-    (value: string, replace: boolean = true) => {
+    (value: string, type: SearchType, replace: boolean = true) => {
       const query = value.trim();
       if (!query) return;
-      const url = `/search?q=${encodeURIComponent(query)}`;
+      const qs = new URLSearchParams();
+      qs.set('q', query);
+      if (type && type !== 'all') qs.set('type', type);
+      const url = `/search?${qs.toString()}`;
       if (replace) router.replace(url);
       else router.push(url);
     },
@@ -51,13 +55,17 @@ const SearchPage = () => {
     setLocalQuery(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      if (value.trim()) commitSearch(value, true);
+      if (value.trim()) commitSearch(value, typeParam, true);
     }, 400);
   };
 
   const handleSearch = (value: string) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    commitSearch(value, true);
+    commitSearch(value, typeParam, true);
+  };
+
+  const onCategoryClick = (next: SearchType) => {
+    commitSearch(localQuery, next, true);
   };
 
   return (
@@ -67,47 +75,18 @@ const SearchPage = () => {
           <div className={styles.headerBlock}>
             <Header className={styles.header} />
           </div>
-          <div className={styles.searchWithInput}>
-            <h1 className={styles.searchHeading}>
-              Найдите специалиста для вашего питомца
-            </h1>
-            <h1 className={styles.searchHeadingMobile}>Поиск</h1>
-            <Input
-              className={styles.searchInput}
-              placeholder="Ветеринары, клиники, услуги"
-              value={localQuery}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleInputChange(e.target.value)
-              }
-              icon={
-                <SearchIcon
-                  width={27}
-                  height={27}
-                  className={styles.searchIcon}
-                  onClick={() => handleSearch(localQuery)}
-                />
-              }
-              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                if (e.key === 'Enter') {
-                  handleSearch((e.target as HTMLInputElement).value);
-                }
-              }}
-            />
-          </div>
+          <SearchHeader
+            query={localQuery}
+            onQueryChange={handleInputChange}
+            onSearchClick={() => handleSearch(localQuery)}
+            onEnterPress={value => handleSearch(value)}
+            selectedType={typeParam}
+            onTypeChange={onCategoryClick}
+          />
           {isLoading && <div>Загрузка...</div>}
           {isError && <div>Ошибка при поиске</div>}
 
-          {!isLoading && !isError && (
-            <div className={styles.doctorsGrid}>
-              {data?.doctors?.length ? (
-                data.doctors.map(doctor => (
-                  <DoctorCard key={doctor.id} doctor={doctor} />
-                ))
-              ) : (
-                <div>Ничего не найдено</div>
-              )}
-            </div>
-          )}
+          <SearchResults data={data} isLoading={isLoading} isError={isError} />
         </div>
       </div>
       <Footer />
