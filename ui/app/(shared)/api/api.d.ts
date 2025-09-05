@@ -378,4 +378,26 @@ export interface UpdateDoctorScheduleDto {
   isAvailable: boolean;
 }
 
+export interface UnifiedSearchResultDto {
+  /** Список найденных врачей */
+  doctors: Doctor[];
+  /** Список найденных клиник */
+  clinics: VetClinic[];
+  /**
+   * Количество найденных врачей
+   * @example 0
+   */
+  totalDoctors: number;
+  /**
+   * Количество найденных клиник
+   * @example 0
+   */
+  totalClinics: number;
+  /**
+   * Общее количество результатов
+   * @example 0
+   */
+  totalResults: number;
+}
+
 export type UploadImageDto = object;

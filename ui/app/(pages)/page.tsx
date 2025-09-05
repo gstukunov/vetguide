@@ -1,6 +1,8 @@
 'use client';
 
-import { FC } from 'react';
+import { FC, useRef } from 'react';
+
+import { useRouter } from 'next/navigation';
 
 import { AboutService } from '@/(features)/about-service';
 import { BestDoctors } from '@/(features)/best-doctors';
@@ -13,6 +15,15 @@ import { Input } from '@/(shared)/ui/inputs';
 import styles from './styles.module.scss';
 
 const MainPage: FC = () => {
+  const router = useRouter();
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleSearch = (value: string) => {
+    const query = value.trim();
+    if (!query) return;
+    router.push(`/search?q=${encodeURIComponent(query)}`);
+  };
+
   return (
     <>
       <div className={styles.page}>
@@ -30,9 +41,24 @@ const MainPage: FC = () => {
                   Выберите специалиста для вашего питомца
                 </p>
                 <Input
+                  ref={inputRef}
                   className={styles.searchInput}
                   placeholder="Ветеринары, клиники, услуги"
-                  icon={<SearchIcon width={27} height={27} />}
+                  icon={
+                    <SearchIcon
+                      width={27}
+                      height={27}
+                      onClick={() => {
+                        const value = inputRef.current?.value ?? '';
+                        handleSearch(value);
+                      }}
+                    />
+                  }
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      handleSearch((e.target as HTMLInputElement).value);
+                    }
+                  }}
                 />
               </div>
             </div>

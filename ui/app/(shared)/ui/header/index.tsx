@@ -37,7 +37,7 @@ const Header: React.FC<HeaderProps> = ({ className, isAuthPages }) => {
     ) {
       signOut();
     }
-  }, [isAuthenticated, accessToken]);
+  }, [isAuthenticated, accessToken, signOut]);
 
   return (
     <header className={clsx(styles.header, className)}>

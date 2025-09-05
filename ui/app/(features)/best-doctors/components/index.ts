@@ -1,2 +1,1 @@
-export { DoctorCard } from './DoctorCard';
-export type { DoctorCardProps } from './DoctorCard/model/types';
+export { DoctorCard } from '@/(shared)/ui/doctor-card';

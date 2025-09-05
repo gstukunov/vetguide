@@ -1,5 +1,13 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiQuery,
+  ApiOkResponse,
+  ApiExtraModels,
+  getSchemaPath,
+  ApiResponse,
+} from '@nestjs/swagger';
 import {
   SearchService,
   UnifiedSearchResult,
@@ -8,9 +16,11 @@ import {
 import { SearchDto } from './dto/search.dto';
 import { Doctor } from '../doctor/entities/doctor.entity';
 import { VetClinic } from '../vet-clinic/entities/vet-clinic.entity';
+import { UnifiedSearchResultDto } from './dto/unified-search-result.dto';
 
 @ApiTags('Поиск')
 @Controller('search')
+@ApiExtraModels(UnifiedSearchResultDto, Doctor, VetClinic)
 export class SearchController {
   constructor(private readonly searchService: SearchService) {}
 
@@ -33,35 +43,13 @@ export class SearchController {
     required: false,
     example: SearchType.ALL,
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Результаты поиска',
     schema: {
       oneOf: [
-        {
-          type: 'object',
-          properties: {
-            doctors: {
-              type: 'array',
-              items: { $ref: '#/components/schemas/Doctor' },
-            },
-            clinics: {
-              type: 'array',
-              items: { $ref: '#/components/schemas/VetClinic' },
-            },
-            totalDoctors: { type: 'number' },
-            totalClinics: { type: 'number' },
-            totalResults: { type: 'number' },
-          },
-        },
-        {
-          type: 'array',
-          items: { $ref: '#/components/schemas/Doctor' },
-        },
-        {
-          type: 'array',
-          items: { $ref: '#/components/schemas/VetClinic' },
-        },
+        { $ref: getSchemaPath(UnifiedSearchResultDto) },
+        { type: 'array', items: { $ref: getSchemaPath(Doctor) } },
+        { type: 'array', items: { $ref: getSchemaPath(VetClinic) } },
       ],
     },
   })
@@ -83,25 +71,9 @@ export class SearchController {
     example: 'ветеринар',
     required: true,
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Комбинированные результаты поиска',
-    schema: {
-      type: 'object',
-      properties: {
-        doctors: {
-          type: 'array',
-          items: { $ref: '#/components/schemas/Doctor' },
-        },
-        clinics: {
-          type: 'array',
-          items: { $ref: '#/components/schemas/VetClinic' },
-        },
-        totalDoctors: { type: 'number' },
-        totalClinics: { type: 'number' },
-        totalResults: { type: 'number' },
-      },
-    },
+    type: UnifiedSearchResultDto,
   })
   async searchAll(@Query('query') query: string): Promise<UnifiedSearchResult> {
     return this.searchService.searchAll(query);

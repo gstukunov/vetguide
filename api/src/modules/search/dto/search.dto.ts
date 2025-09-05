@@ -6,10 +6,10 @@ export class SearchDto {
   @ApiProperty({
     description: 'Поисковый запрос',
     example: 'кардиолог',
-    minLength: 2,
+    minLength: 1,
   })
   @IsString()
-  @MinLength(2)
+  @MinLength(1)
   query: string;
 
   @ApiProperty({

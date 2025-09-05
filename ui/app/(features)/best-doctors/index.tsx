@@ -1,8 +1,8 @@
 import { FC } from 'react';
 
 import { useGetTopDoctors } from '@/(shared)/api/hooks/doctors';
+import { DoctorCard } from '@/(shared)/ui/doctor-card';
 
-import { DoctorCard } from './components';
 import styles from './styles.module.scss';
 
 export const BestDoctors: FC = () => {
