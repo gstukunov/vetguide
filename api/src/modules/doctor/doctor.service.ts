@@ -17,6 +17,7 @@ import { DoctorSchedule } from '../doctor-schedule/entities/doctor-schedule.enti
 import { DoctorScheduleService } from '../doctor-schedule/doctor-schedule.service';
 import { S3Service } from '../s3/s3.service';
 import { ImageProcessingOptions } from '../s3/interfaces/interfaces';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DoctorService {
@@ -29,6 +30,7 @@ export class DoctorService {
     @Inject(forwardRef(() => DoctorScheduleService)) // Решаем циклическую зависимость
     private readonly scheduleService: DoctorScheduleService,
     private readonly s3Service: S3Service,
+    private readonly configService: ConfigService,
   ) {}
 
   async create(createDto: CreateDoctorDto): Promise<Doctor> {
@@ -40,7 +42,7 @@ export class DoctorService {
     const doctor = this.doctorRepo.create({
       fullName: createDto.fullName,
       description: createDto.description,
-      photo: createDto.photo,
+      photoKey: createDto.photoKey,
       specialization: createDto.specialization,
       clinic,
     });
@@ -71,8 +73,8 @@ export class DoctorService {
       doctor.specialization = updateDto.specialization;
     }
 
-    if (updateDto.photo !== undefined) {
-      doctor.photo = updateDto.photo;
+    if (updateDto.photoKey !== undefined) {
+      doctor.photoKey = updateDto.photoKey;
     }
 
     return this.doctorRepo.save(doctor);
@@ -100,15 +102,38 @@ export class DoctorService {
     };
 
     const result = await this.s3Service.uploadImage(file, folder, options);
-    doctor.photo = result.url;
+    doctor.photoKey = result.key;
     await this.doctorRepo.save(doctor);
 
     return {
-      url: result.url,
       key: result.key,
+      url: result.url,
       thumbnailUrl: result.thumbnailUrl,
       doctor,
     };
+  }
+
+  getPhotoUrl(photoKey: string): string | null {
+    if (!photoKey) {
+      return null;
+    }
+
+    // Для постоянных публичных фото используем статические URL
+    const isLocal = this.configService.get('NODE_ENV') === 'development';
+    const minioEndpoint: string | undefined =
+      this.configService.get('MINIO_ENDPOINT');
+
+    if (isLocal && minioEndpoint) {
+      // MinIO - публичный URL
+      const bucketName: string | undefined =
+        this.configService.get('MINIO_BUCKET');
+      return `${minioEndpoint}/${bucketName}/${photoKey}`;
+    } else if (isLocal && !minioEndpoint) {
+      // Локальное хранилище
+      return `/uploads/${photoKey}`;
+    }
+
+    return null;
   }
 
   async findOne(id: number): Promise<Doctor> {
@@ -178,7 +203,7 @@ export class DoctorService {
 
     const searchTerm = `%${query.trim()}%`;
 
-    return this.doctorRepo
+    const doctors = await this.doctorRepo
       .createQueryBuilder('doctor')
       .leftJoinAndSelect('doctor.clinic', 'clinic')
       .leftJoinAndSelect('doctor.reviews', 'reviews')
@@ -192,6 +217,12 @@ export class DoctorService {
       .orWhere('clinic.address ILIKE :searchTerm')
       .orderBy('doctor.fullName', 'ASC')
       .getMany();
+
+    // Добавляем photoUrl для каждого доктора
+    return doctors.map((doctor) => ({
+      ...doctor,
+      photoUrl: this.getPhotoUrl(doctor.photoKey),
+    }));
   }
 
   async searchDoctorsBySpecialization(
@@ -203,13 +234,19 @@ export class DoctorService {
 
     const searchTerm = `%${specialization.trim()}%`;
 
-    return this.doctorRepo
+    const doctors = await this.doctorRepo
       .createQueryBuilder('doctor')
       .leftJoinAndSelect('doctor.clinic', 'clinic')
       .leftJoinAndSelect('doctor.reviews', 'reviews')
       .where('doctor.specialization::text ILIKE :searchTerm', { searchTerm })
       .orderBy('doctor.fullName', 'ASC')
       .getMany();
+
+    // Добавляем photoUrl для каждого доктора
+    return doctors.map((doctor) => ({
+      ...doctor,
+      photoUrl: this.getPhotoUrl(doctor.photoKey),
+    }));
   }
 
   async getTopDoctors(params: {
@@ -245,7 +282,7 @@ export class DoctorService {
       // Получаем всех докторов
       const doctors = await query.getMany();
 
-      // Рассчитываем средний рейтинг для каждого доктора
+      // Рассчитываем средний рейтинг и добавляем photoUrl для каждого доктора
       const doctorsWithRating = doctors.map((doctor) => {
         // Проверяем, что reviews существует и является массивом
         const reviews = doctor.reviews || [];
@@ -266,6 +303,7 @@ export class DoctorService {
           ...doctor,
           averageRating,
           reviewCount: verifiedReviews.length,
+          photoUrl: this.getPhotoUrl(doctor.photoKey),
         };
       });
 

@@ -1,12 +1,13 @@
-import { NextConfig } from 'next';
 import path from 'path';
+
+import { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   output: 'standalone',
   images: {
-    domains: ['vetguide.space'],
+    domains: ['vetguide.space', 'localhost'],
   },
   port: 3000,
   webpack: config => {

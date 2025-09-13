@@ -191,13 +191,13 @@ export class S3Service {
           Key: key,
           Body: processedImage,
           ContentType: `image/${fileExtension}`,
-          ACL: 'public-read',
+          // Убираем ACL для MinIO, используем bucket policy
         });
 
         await this.s3Client.send(uploadCommand);
 
         if (this.isLocal && this.configService.get('MINIO_ENDPOINT')) {
-          // MinIO
+          // MinIO - публичные ссылки
           url = `${this.endpoint}/${this.bucketName}/${key}`;
         } else {
           // AWS S3
@@ -217,12 +217,13 @@ export class S3Service {
             Key: thumbnailKey,
             Body: thumbnail,
             ContentType: `image/${fileExtension}`,
-            ACL: 'public-read',
+            // Убираем ACL для MinIO, используем bucket policy
           });
 
           await this.s3Client.send(thumbnailUploadCommand);
 
           if (this.isLocal && this.configService.get('MINIO_ENDPOINT')) {
+            // MinIO - публичные ссылки для миниатюр
             thumbnailUrl = `${this.endpoint}/${this.bucketName}/${thumbnailKey}`;
           } else {
             thumbnailUrl = `https://${this.bucketName}.s3.${this.region}.amazonaws.com/${thumbnailKey}`;

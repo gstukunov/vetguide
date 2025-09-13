@@ -19,11 +19,11 @@ export class Doctor {
   id: number;
 
   @ApiProperty({
-    description: 'Фото врача',
-    example: 'https://example.com/photo.jpg',
+    description: 'Ключ фото врача в S3',
+    example: 'avatars/doctors/1/uuid.jpeg',
   })
   @Column({ nullable: true })
-  photo: string;
+  photoKey: string;
 
   @ApiProperty({
     description: 'Полное имя врача',

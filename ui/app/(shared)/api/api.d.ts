@@ -12,13 +12,13 @@
 
 /** День недели */
 export enum WeekDay {
-  ValueПонедельник = "Понедельник",
-  ValueВторник = "Вторник",
-  ValueСреда = "Среда",
-  ValueЧетверг = "Четверг",
-  ValueПятница = "Пятница",
-  ValueСуббота = "Суббота",
-  ValueВоскресенье = "Воскресенье",
+  ValueПонедельник = 'Понедельник',
+  ValueВторник = 'Вторник',
+  ValueСреда = 'Среда',
+  ValueЧетверг = 'Четверг',
+  ValueПятница = 'Пятница',
+  ValueСуббота = 'Суббота',
+  ValueВоскресенье = 'Воскресенье',
 }
 
 export interface UpdateUserRoleDto {
@@ -31,7 +31,7 @@ export interface UpdateUserRoleDto {
    * Новая роль пользователя
    * @example "VET_CLINIC"
    */
-  newRole: "USER" | "VET_CLINIC" | "SUPER_ADMIN";
+  newRole: 'USER' | 'VET_CLINIC' | 'SUPER_ADMIN';
 }
 
 export interface User {
@@ -64,7 +64,7 @@ export interface User {
    * Роль пользователя в системе
    * @example "USER"
    */
-  role: "USER" | "VET_CLINIC" | "SUPER_ADMIN";
+  role: 'USER' | 'VET_CLINIC' | 'SUPER_ADMIN';
   /** Список отзывов пользователя */
   reviews?: Review[];
   /** Связанная ветеринарная клиника */
@@ -143,6 +143,11 @@ export interface Doctor {
    */
   id: number;
   /**
+   * Фото врача
+   * @example "https://example.com/photo.jpg"
+   */
+  photo: string;
+  /**
    * Полное имя врача
    * @example "Иванов Иван Иванович"
    */
@@ -197,7 +202,7 @@ export interface Review {
    * Статус отзыва
    * @example "VERIFIED"
    */
-  status: "PENDING" | "VERIFIED";
+  status: 'PENDING' | 'VERIFIED';
   /** Врач, к которому относится отзыв */
   doctor: Doctor;
   /** Пользователь, оставивший отзыв */
@@ -211,7 +216,7 @@ export interface SafeUserDto {
   /** @example "Иван Иванов" */
   fullName: string;
   /** @example "USER" */
-  role: "USER" | "VET_CLINIC" | "SUPER_ADMIN";
+  role: 'USER' | 'VET_CLINIC' | 'SUPER_ADMIN';
   /** @default false */
   isVerified: boolean;
   reviews?: Review[];
@@ -294,6 +299,8 @@ export interface CreateDoctorDto {
   fullName: string;
   /** Описание врача */
   description?: string;
+  /** URL фотографии врача */
+  photo?: string;
   /**
    * Список специалитетов врача
    * @example ["Терапевт","Хирург","Дерматолог"]
@@ -308,6 +315,8 @@ export interface UpdateDoctorDto {
   fullName?: string;
   /** Doctor description */
   description?: string;
+  /** Doctor photo URL */
+  photo?: string;
   /**
    * Array of doctor specializations
    * @example ["Cardiology","Surgery","Dermatology"]
@@ -399,5 +408,3 @@ export interface UnifiedSearchResultDto {
    */
   totalResults: number;
 }
-
-export type UploadImageDto = object;

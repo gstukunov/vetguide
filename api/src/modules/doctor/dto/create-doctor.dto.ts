@@ -11,10 +11,10 @@ export class CreateDoctorDto {
   @IsOptional()
   description?: string;
 
-  @ApiProperty({ description: 'URL фотографии врача', required: false })
+  @ApiProperty({ description: 'Ключ фотографии врача в S3', required: false })
   @IsString()
   @IsOptional()
-  photo?: string;
+  photoKey?: string;
 
   @ApiProperty({
     description: 'Список специалитетов врача',

@@ -12,10 +12,10 @@ export class UpdateDoctorDto {
   @IsOptional()
   description?: string;
 
-  @ApiProperty({ description: 'Doctor photo URL', required: false })
+  @ApiProperty({ description: 'Doctor photo key in S3', required: false })
   @IsString()
   @IsOptional()
-  photo?: string;
+  photoKey?: string;
 
   @ApiProperty({
     description: 'Array of doctor specializations',

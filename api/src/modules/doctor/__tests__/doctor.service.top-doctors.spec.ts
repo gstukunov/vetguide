@@ -5,6 +5,8 @@ import { DoctorService } from '../doctor.service';
 import { Doctor } from '../entities/doctor.entity';
 import { VetClinicService } from '../../vet-clinic/vet-clinic.service';
 import { DoctorScheduleService } from '../../doctor-schedule/doctor-schedule.service';
+import { S3Service } from '../../s3/s3.service';
+import { ConfigService } from '@nestjs/config';
 import { ReviewStatus } from '../../review/entities/review.entity';
 
 describe('DoctorService - Top Doctors', () => {
@@ -23,6 +25,22 @@ describe('DoctorService - Top Doctors', () => {
     createSchedule: jest.fn(),
   };
 
+  const mockS3Service = {
+    uploadImage: jest.fn(),
+  };
+
+  const mockConfigService = {
+    get: jest.fn().mockImplementation((key: string) => {
+      const config = {
+        NODE_ENV: 'development',
+        MINIO_ENDPOINT: 'http://localhost:9000',
+        MINIO_BUCKET: 'vetguide-images',
+        MINIO_REGION: 'us-east-1',
+      };
+      return config[key];
+    }),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -38,6 +56,14 @@ describe('DoctorService - Top Doctors', () => {
         {
           provide: DoctorScheduleService,
           useValue: mockDoctorScheduleService,
+        },
+        {
+          provide: S3Service,
+          useValue: mockS3Service,
+        },
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
         },
       ],
     }).compile();

@@ -10,6 +10,7 @@ import {
   UploadedFile,
   UseInterceptors,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -19,6 +20,7 @@ import {
   ApiResponse,
   ApiTags,
   ApiQuery,
+  ApiConsumes,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -166,13 +168,27 @@ export class DoctorController {
   }
 
   @Post(':id/photo')
-  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPER_ADMIN)
   @UseInterceptors(FileInterceptor('image'))
   @ApiOperation({ summary: 'Загрузить/обновить фото врача' })
   @ApiParam({ name: 'id', description: 'ID врача', type: Number })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        image: { type: 'string', format: 'binary' },
+      },
+      required: ['image'],
+    },
+  })
   @ApiResponse({ status: 200, description: 'Фото загружено и сохранено' })
+  @ApiResponse({ status: 400, description: 'Файл изображения не предоставлен' })
+  @ApiResponse({ status: 404, description: 'Врач не найден' })
+  @ApiResponse({ status: 401, description: 'Неавторизован' })
+  @ApiResponse({ status: 403, description: 'Недостаточно прав' })
   async uploadPhoto(
     @Param() params: DoctorParamsDto,
     @UploadedFile() file: Express.Multer.File,
@@ -205,8 +221,50 @@ export class DoctorController {
     status: 404,
     description: 'Врач не найден',
   })
-  async findOne(@Param() params: DoctorParamsDto): Promise<Doctor> {
-    return this.doctorService.findOne(params.id);
+  async findOne(
+    @Param() params: DoctorParamsDto,
+  ): Promise<Doctor & { photoUrl: string | null }> {
+    const doctor = await this.doctorService.findOne(params.id);
+    const photoUrl = this.doctorService.getPhotoUrl(doctor.photoKey);
+    return {
+      ...doctor,
+      photoUrl,
+    };
+  }
+
+  @Get(':id/photo-url')
+  @ApiOperation({
+    summary: 'Получить URL фото врача',
+    description: 'Получение подписанного URL для фото врача',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID врача',
+    type: Number,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'URL фото врача',
+    schema: {
+      type: 'object',
+      properties: {
+        photoUrl: { type: 'string', description: 'Постоянный URL фото' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Врач не найден или у него нет фото',
+  })
+  async getPhotoUrl(@Param() params: DoctorParamsDto) {
+    const doctor = await this.doctorService.findOne(params.id);
+    if (!doctor.photoKey) {
+      throw new NotFoundException('У врача нет фото');
+    }
+    const photoUrl = this.doctorService.getPhotoUrl(doctor.photoKey);
+    return {
+      photoUrl,
+    };
   }
 
   @Get(':id/schedule')
@@ -232,6 +290,11 @@ export class DoctorController {
     description: 'Врач не найден',
   })
   async getDoctorSchedule(@Param() params: DoctorParamsDto) {
-    return this.doctorService.getDoctorWithSchedule(params.id);
+    const doctor = await this.doctorService.getDoctorWithSchedule(params.id);
+    const photoUrl = this.doctorService.getPhotoUrl(doctor.photoKey);
+    return {
+      ...doctor,
+      photoUrl,
+    };
   }
 }

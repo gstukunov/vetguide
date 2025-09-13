@@ -5,8 +5,6 @@ import { IconProps } from './model/types';
 export const DogIcon: FC<IconProps> = props => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="164"
-    height="174"
     viewBox="0 0 164 174"
     fill="none"
     {...props}

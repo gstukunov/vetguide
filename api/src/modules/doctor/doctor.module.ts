@@ -8,6 +8,7 @@ import { AuthModule } from '../auth/auth.module';
 import { UserModule } from '../user/user.module';
 import { DoctorScheduleModule } from '../doctor-schedule/doctor-schedule.module';
 import { S3Module } from '../s3/s3.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { S3Module } from '../s3/s3.module';
     forwardRef(() => DoctorScheduleModule),
     forwardRef(() => UserModule),
     S3Module,
+    ConfigModule,
   ],
   controllers: [DoctorController],
   providers: [DoctorService],

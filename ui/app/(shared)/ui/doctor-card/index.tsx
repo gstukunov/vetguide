@@ -1,5 +1,7 @@
 import { FC } from 'react';
 
+import Image from 'next/image';
+
 import { DogIcon } from '@/(shared)/icons/dog';
 import Button from '@/(shared)/ui/button';
 
@@ -9,9 +11,19 @@ import styles from './styles.module.scss';
 export const DoctorCard: FC<DoctorCardProps> = ({ doctor }) => {
   return (
     <div className={styles.doctorCard}>
-      <div className={styles.avatar}>
-        <DogIcon />
-      </div>
+      {doctor.photo ? (
+        <Image
+          src={doctor.photo}
+          className={styles.avatarImage}
+          alt={doctor.fullName}
+          width={100}
+          height={100}
+        />
+      ) : (
+        <div className={styles.avatar}>
+          <DogIcon />
+        </div>
+      )}
       <div className={styles.doctorInfo}>
         <div className={styles.doctorNameAndRating}>
           <div className={styles.nameAndRating}>

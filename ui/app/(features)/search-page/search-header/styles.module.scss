@@ -71,6 +71,7 @@
   color: var(--primary-color-text);
   border: 1px solid transparent;
   cursor: pointer;
+  user-select: none;
   transition:
     background 0.2s,
     color 0.2s,

@@ -24,13 +24,10 @@ export class RolesGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const authHeader = request.headers.authorization;
+    const user = request.user; // Получаем пользователя из JWT стратегии
 
-    if (!authHeader) return false;
+    if (!user) return false;
 
-    const token = authHeader.split(' ')[1];
-    const user = this.jwtService.verify(token); // Используем JwtService
-
-    return requiredRoles.some((role) => user.roles?.includes(role));
+    return requiredRoles.includes(user.role);
   }
 }
