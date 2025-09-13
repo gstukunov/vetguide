@@ -19,7 +19,16 @@ import { UserRole } from '../user/types/role.enum';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UploadImageDto } from './dto/upload-image.dto';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('S3')
+@ApiBearerAuth('JWT-auth')
 @Controller('s3')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.SUPER_ADMIN)
@@ -28,6 +37,23 @@ export class S3Controller {
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('image'))
+  @ApiOperation({ summary: 'Загрузить изображение' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        image: { type: 'string', format: 'binary' },
+        maxWidth: { type: 'integer', minimum: 1, maximum: 4000 },
+        maxHeight: { type: 'integer', minimum: 1, maximum: 4000 },
+        quality: { type: 'integer', minimum: 1, maximum: 100 },
+        format: { type: 'string', enum: ['jpeg', 'png', 'webp'] },
+        createThumbnail: { type: 'boolean' },
+        thumbnailSize: { type: 'integer', minimum: 50, maximum: 500 },
+      },
+      required: ['image'],
+    },
+  })
   async uploadImage(
     @UploadedFile() file: Express.Multer.File,
     @Body() uploadOptions: UploadImageDto,
@@ -51,6 +77,17 @@ export class S3Controller {
 
   @Post('upload/avatar')
   @UseInterceptors(FileInterceptor('image'))
+  @ApiOperation({ summary: 'Загрузить аватар (generic)' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        image: { type: 'string', format: 'binary' },
+      },
+      required: ['image'],
+    },
+  })
   async uploadAvatar(
     @UploadedFile() file: Express.Multer.File,
     @Query('entityType') entityType: string = 'user',
@@ -75,6 +112,17 @@ export class S3Controller {
 
   @Post('upload/doctor-avatar')
   @UseInterceptors(FileInterceptor('image'))
+  @ApiOperation({ summary: 'Загрузить аватар врача' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        image: { type: 'string', format: 'binary' },
+      },
+      required: ['image'],
+    },
+  })
   async uploadDoctorAvatar(
     @UploadedFile() file: Express.Multer.File,
     @Query('doctorId') doctorId: string,
@@ -98,6 +146,17 @@ export class S3Controller {
 
   @Post('upload/clinic-image')
   @UseInterceptors(FileInterceptor('image'))
+  @ApiOperation({ summary: 'Загрузить изображение клиники' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        image: { type: 'string', format: 'binary' },
+      },
+      required: ['image'],
+    },
+  })
   async uploadClinicImage(
     @UploadedFile() file: Express.Multer.File,
     @Query('clinicId') clinicId: string,

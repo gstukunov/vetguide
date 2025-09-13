@@ -1,0 +1,77 @@
+.doctorCard {
+  background-color: var(--tertiary-color-bg);
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 20px;
+  max-width: 800px;
+  min-width: 300px;
+  width: 49%;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.avatar {
+  border-radius: 100%;
+  background-color: #daeaf833;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.doctorInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 15px 0;
+}
+
+.doctorName {
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 90%;
+  color: var(--primary-color-text);
+}
+
+.doctorAddress {
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 22px;
+  color: var(--primary-color-icon);
+}
+
+@media (max-width: 1300px) {
+  .doctorCard {
+    width: 100%;
+  }
+}
+
+@media (max-width: 500px) {
+  .avatar {
+    width: 50px;
+    height: 50px;
+  }
+  .doctorCard {
+    padding: 20px;
+  }
+  .doctorName {
+    font-size: 16px;
+  }
+  .doctorAddress {
+    font-size: 12px;
+    line-height: 100%;
+  }
+  .doctorInfo {
+    padding: 9px 0;
+  }
+}

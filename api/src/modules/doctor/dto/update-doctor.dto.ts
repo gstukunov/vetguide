@@ -12,6 +12,11 @@ export class UpdateDoctorDto {
   @IsOptional()
   description?: string;
 
+  @ApiProperty({ description: 'Doctor photo URL', required: false })
+  @IsString()
+  @IsOptional()
+  photo?: string;
+
   @ApiProperty({
     description: 'Array of doctor specializations',
     type: [String],

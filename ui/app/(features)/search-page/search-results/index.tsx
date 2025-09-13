@@ -1,5 +1,6 @@
 import { FC } from 'react';
 
+import { ClinicCard } from '@/(shared)/ui/clinic-card';
 import { DoctorCard } from '@/(shared)/ui/doctor-card';
 
 import styles from './styles.module.scss';
@@ -15,14 +16,19 @@ export const SearchResults: FC<SearchResultsProps> = ({
   if (isError) return <div>Ошибка при поиске</div>;
 
   return (
-    <div className={styles.doctorsGrid}>
-      {data?.doctors.length ? (
-        data?.doctors.map(doctor => (
-          <DoctorCard key={doctor.id} doctor={doctor} />
-        ))
+    <>
+      {data?.doctors.length || data?.clinics.length ? (
+        <div className={styles.doctorsGrid}>
+          {data.doctors.map(doctor => (
+            <DoctorCard key={doctor.id} doctor={doctor} />
+          ))}
+          {data.clinics.map(clinic => (
+            <ClinicCard key={clinic.id} clinic={clinic} />
+          ))}
+        </div>
       ) : (
         <div>Ничего не найдено</div>
       )}
-    </div>
+    </>
   );
 };

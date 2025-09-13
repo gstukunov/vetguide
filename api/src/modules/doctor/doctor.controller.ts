@@ -7,6 +7,9 @@ import {
   Put,
   UseGuards,
   Query,
+  UploadedFile,
+  UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -27,6 +30,7 @@ import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { TopDoctorsQueryDto } from './dto/top-doctors.dto';
 import { DoctorParamsDto } from './dto/doctor-params.dto';
 import { Doctor } from './entities/doctor.entity';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Врачи')
 @Controller('doctors')
@@ -159,6 +163,24 @@ export class DoctorController {
     @Body() updateDto: UpdateDoctorDto,
   ): Promise<Doctor> {
     return this.doctorService.update(params.id, updateDto);
+  }
+
+  @Post(':id/photo')
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.SUPER_ADMIN)
+  @UseInterceptors(FileInterceptor('image'))
+  @ApiOperation({ summary: 'Загрузить/обновить фото врача' })
+  @ApiParam({ name: 'id', description: 'ID врача', type: Number })
+  @ApiResponse({ status: 200, description: 'Фото загружено и сохранено' })
+  async uploadPhoto(
+    @Param() params: DoctorParamsDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Файл изображения не предоставлен');
+    }
+    return this.doctorService.uploadPhoto(params.id, file);
   }
 
   @Get(':id')

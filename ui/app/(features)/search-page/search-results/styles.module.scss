@@ -2,7 +2,14 @@
   display: flex;
   flex-wrap: wrap;
   gap: 24px;
-  margin: 0 auto;
-  justify-content: center;
+  // margin: 0 auto;
+  justify-content: flex-start;
   max-width: 1400px;
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .doctorsGrid {
+    justify-content: center;
+  }
 }

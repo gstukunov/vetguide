@@ -7,6 +7,7 @@ import { DoctorController } from './doctor.controller';
 import { AuthModule } from '../auth/auth.module';
 import { UserModule } from '../user/user.module';
 import { DoctorScheduleModule } from '../doctor-schedule/doctor-schedule.module';
+import { S3Module } from '../s3/s3.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { DoctorScheduleModule } from '../doctor-schedule/doctor-schedule.module'
     AuthModule,
     forwardRef(() => DoctorScheduleModule),
     forwardRef(() => UserModule),
+    S3Module,
   ],
   controllers: [DoctorController],
   providers: [DoctorService],

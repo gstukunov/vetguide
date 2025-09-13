@@ -11,6 +11,11 @@ export class CreateDoctorDto {
   @IsOptional()
   description?: string;
 
+  @ApiProperty({ description: 'URL фотографии врача', required: false })
+  @IsString()
+  @IsOptional()
+  photo?: string;
+
   @ApiProperty({
     description: 'Список специалитетов врача',
     type: [String],

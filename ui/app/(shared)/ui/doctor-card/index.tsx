@@ -1,14 +1,10 @@
 import { FC } from 'react';
 
-import type { Doctor } from '@/(shared)/api/api';
 import { DogIcon } from '@/(shared)/icons/dog';
 import Button from '@/(shared)/ui/button';
 
+import { DoctorCardProps } from './model/types';
 import styles from './styles.module.scss';
-
-type DoctorCardProps = {
-  doctor: Doctor;
-};
 
 export const DoctorCard: FC<DoctorCardProps> = ({ doctor }) => {
   return (

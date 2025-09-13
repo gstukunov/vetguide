@@ -15,6 +15,8 @@ import { ReviewStatus } from '../review/entities/review.entity';
 import { CreateDoctorScheduleDto } from '../doctor-schedule/dto/doctor-schedule.dto';
 import { DoctorSchedule } from '../doctor-schedule/entities/doctor-schedule.entity';
 import { DoctorScheduleService } from '../doctor-schedule/doctor-schedule.service';
+import { S3Service } from '../s3/s3.service';
+import { ImageProcessingOptions } from '../s3/interfaces/interfaces';
 
 @Injectable()
 export class DoctorService {
@@ -26,6 +28,7 @@ export class DoctorService {
     private readonly clinicService: VetClinicService,
     @Inject(forwardRef(() => DoctorScheduleService)) // Решаем циклическую зависимость
     private readonly scheduleService: DoctorScheduleService,
+    private readonly s3Service: S3Service,
   ) {}
 
   async create(createDto: CreateDoctorDto): Promise<Doctor> {
@@ -37,6 +40,7 @@ export class DoctorService {
     const doctor = this.doctorRepo.create({
       fullName: createDto.fullName,
       description: createDto.description,
+      photo: createDto.photo,
       specialization: createDto.specialization,
       clinic,
     });
@@ -67,7 +71,44 @@ export class DoctorService {
       doctor.specialization = updateDto.specialization;
     }
 
+    if (updateDto.photo !== undefined) {
+      doctor.photo = updateDto.photo;
+    }
+
     return this.doctorRepo.save(doctor);
+  }
+
+  async uploadPhoto(
+    doctorId: number,
+    file: Express.Multer.File,
+  ): Promise<{
+    url: string;
+    key: string;
+    thumbnailUrl?: string;
+    doctor: Doctor;
+  }> {
+    const doctor = await this.findOne(doctorId);
+
+    const folder = `avatars/doctors/${doctorId}`;
+    const options: ImageProcessingOptions = {
+      maxWidth: 500,
+      maxHeight: 500,
+      quality: 90,
+      format: 'jpeg',
+      createThumbnail: true,
+      thumbnailSize: 200,
+    };
+
+    const result = await this.s3Service.uploadImage(file, folder, options);
+    doctor.photo = result.url;
+    await this.doctorRepo.save(doctor);
+
+    return {
+      url: result.url,
+      key: result.key,
+      thumbnailUrl: result.thumbnailUrl,
+      doctor,
+    };
   }
 
   async findOne(id: number): Promise<Doctor> {

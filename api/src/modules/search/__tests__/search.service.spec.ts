@@ -16,6 +16,7 @@ describe('SearchService', () => {
 
   const mockDoctor: Doctor = {
     id: 1,
+    photo: 'https://example.com/photo.jpg',
     fullName: 'Доктор Иван Иванов',
     description: 'Опытный ветеринар с 10-летним стажем',
     specialization: ['Кардиология', 'Хирургия'],

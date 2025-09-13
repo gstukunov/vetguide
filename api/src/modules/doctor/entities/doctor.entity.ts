@@ -19,6 +19,13 @@ export class Doctor {
   id: number;
 
   @ApiProperty({
+    description: 'Фото врача',
+    example: 'https://example.com/photo.jpg',
+  })
+  @Column({ nullable: true })
+  photo: string;
+
+  @ApiProperty({
     description: 'Полное имя врача',
     example: 'Иванов Иван Иванович',
   })
