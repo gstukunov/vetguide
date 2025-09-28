@@ -1,14 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsInt } from 'class-validator';
+import { IsEnum, IsString, Length, Matches } from 'class-validator';
 import { UserRole } from '../../user/types/role.enum';
 
 export class UpdateUserRoleDto {
   @ApiProperty({
     description: 'ID пользователя, для которого меняется роль',
-    example: 1,
+    example: 'V1StGXR8_Z5jdHi6B-myT',
   })
-  @IsInt()
-  userId: number;
+  @IsString()
+  @Length(21, 21)
+  @Matches(/^[A-Za-z0-9_-]+$/, {
+    message: 'ID должен содержать только буквы, цифры, дефисы и подчеркивания',
+  })
+  userId: string;
 
   @ApiProperty({
     description: 'Новая роль пользователя',

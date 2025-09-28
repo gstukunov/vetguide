@@ -14,7 +14,7 @@ describe('UserService', () => {
   let mockJwtService: any;
 
   const mockUser = {
-    id: 1,
+    id: 'V1StGXR8_Z5jdHi6B-myT',
     phone: '+79001234567',
     password: 'hashedPassword',
     fullName: 'Test User',
@@ -71,14 +71,14 @@ describe('UserService', () => {
     it('должен возвращать данные пользователя без пароля', async () => {
       mockUserRepository.findOne.mockResolvedValue(mockUser);
 
-      const result = await service.getMe(1);
+      const result = await service.getMe('V1StGXR8_Z5jdHi6B-myT');
 
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({
-        where: { id: 1 },
+        where: { id: 'V1StGXR8_Z5jdHi6B-myT' },
         relations: ['reviews', 'clinic'],
       });
       expect(result).toEqual({
-        id: 1,
+        id: 'V1StGXR8_Z5jdHi6B-myT',
         phone: '+79001234567',
         fullName: 'Test User',
         role: UserRole.USER,
@@ -94,9 +94,11 @@ describe('UserService', () => {
     it('должен выбрасывать NotFoundException когда пользователь не найден', async () => {
       mockUserRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.getMe(999)).rejects.toThrow(NotFoundException);
+      await expect(service.getMe('V999StGXR8_Z5jdHi6B-myT')).rejects.toThrow(
+        NotFoundException,
+      );
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({
-        where: { id: 999 },
+        where: { id: 'V999StGXR8_Z5jdHi6B-myT' },
         relations: ['reviews', 'clinic'],
       });
     });

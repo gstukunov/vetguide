@@ -1,12 +1,7 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Doctor } from '../../doctor/entities/doctor.entity';
+import { BaseEntity } from '../../../common/entities/base.entity';
 
 export enum WeekDay {
   MONDAY = 'Понедельник',
@@ -19,13 +14,8 @@ export enum WeekDay {
 }
 
 @Entity()
-export class DoctorSchedule {
-  @ApiProperty({
-    description: 'Уникальный идентификатор записи',
-    example: 1,
-  })
-  @PrimaryGeneratedColumn()
-  id: number;
+export class DoctorSchedule extends BaseEntity {
+  // id наследуется от BaseEntity
 
   @ApiProperty({
     enum: WeekDay,
@@ -47,6 +37,13 @@ export class DoctorSchedule {
   })
   @Column({ default: true })
   isAvailable: boolean;
+
+  @ApiProperty({
+    description: 'ID врача',
+    example: 'V1StGXR8_Z5jdHi6B-myT',
+  })
+  @Column({ nullable: true })
+  doctor_id: string;
 
   @ApiProperty({
     type: () => Doctor,

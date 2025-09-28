@@ -15,33 +15,41 @@ describe('SearchService', () => {
   let vetClinicService: VetClinicService;
 
   const mockDoctor: Doctor = {
-    id: 1,
+    id: '1',
     photoKey: 'https://example.com/photo.jpg',
     fullName: 'Доктор Иван Иванов',
+    photoUrl: 'avatars/doctors/1/uuid.jpeg',
+    clinicId: '1',
     description: 'Опытный ветеринар с 10-летним стажем',
     specialization: ['Кардиология', 'Хирургия'],
     clinic: {
-      id: 1,
+      id: '1',
       name: 'Тестовая клиника',
       address: 'Тестовый адрес',
       inn: '1234567890',
       description: 'Тестовое описание',
       doctors: [],
       users: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
     reviews: [],
     schedules: [],
     averageRating: 4.5,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
 
   const mockClinic: VetClinic = {
-    id: 1,
+    id: '1',
     name: 'Тестовая ветеринарная клиника',
     address: 'Тестовый адрес, 123',
     inn: '1234567890',
     description: 'Тестовое описание клиники',
     doctors: [mockDoctor],
     users: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
 
   beforeEach(async () => {

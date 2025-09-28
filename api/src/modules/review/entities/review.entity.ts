@@ -1,13 +1,8 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Doctor } from '../../doctor/entities/doctor.entity';
 import { User } from '../../user/entities/user.entity';
+import { BaseEntity } from '../../../common/entities/base.entity';
 
 export enum ReviewStatus {
   PENDING = 'PENDING',
@@ -15,10 +10,8 @@ export enum ReviewStatus {
 }
 
 @Entity()
-export class Review {
-  @ApiProperty({ description: 'Уникальный идентификатор отзыва', example: 1 })
-  @PrimaryGeneratedColumn()
-  id: number;
+export class Review extends BaseEntity {
+  // id наследуется от BaseEntity
 
   @ApiProperty({ description: 'Заголовок отзыва', example: 'Отличный врач!' })
   @Column()
@@ -53,13 +46,27 @@ export class Review {
   status: ReviewStatus;
 
   @ApiProperty({
+    description: 'ID врача',
+    example: 'V1StGXR8_Z5jdHi6B-myT',
+  })
+  @Column({ nullable: true })
+  doctorId: string;
+
+  @ApiProperty({
+    description: 'ID пользователя',
+    example: 'V1StGXR8_Z5jdHi6B-myT',
+  })
+  @Column({ nullable: true })
+  userId: string;
+
+  @ApiProperty({
     description: 'Врач, к которому относится отзыв',
     type: () => Doctor,
   })
   @ManyToOne(() => Doctor, (doctor) => doctor.reviews, {
     onDelete: 'CASCADE', // Удаление при удалении доктора
   })
-  @JoinColumn()
+  @JoinColumn({ name: 'doctorId' })
   doctor: Doctor;
 
   @ApiProperty({
@@ -69,6 +76,6 @@ export class Review {
   @ManyToOne(() => User, (user) => user.reviews, {
     onDelete: 'CASCADE', // Удаление при удалении пользователя
   })
-  @JoinColumn()
+  @JoinColumn({ name: 'userId' })
   user: User;
 }

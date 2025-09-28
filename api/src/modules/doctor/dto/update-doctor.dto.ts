@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString, IsArray, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsArray,
+  IsOptional,
+  Length,
+  Matches,
+} from 'class-validator';
 
 export class UpdateDoctorDto {
   @ApiProperty({ description: 'Full name of the doctor', required: false })
@@ -28,8 +34,16 @@ export class UpdateDoctorDto {
   @IsOptional()
   specialization?: string[];
 
-  @ApiProperty({ description: 'ID of the veterinary clinic', required: false })
-  @IsNumber()
+  @ApiProperty({
+    description: 'ID of the veterinary clinic',
+    required: false,
+    example: 'V1StGXR8_Z5jdHi6B-myT',
+  })
+  @IsString()
+  @Length(21, 21)
+  @Matches(/^[A-Za-z0-9_-]+$/, {
+    message: 'ID должен содержать только буквы, цифры, дефисы и подчеркивания',
+  })
   @IsOptional()
-  clinicId?: number;
+  clinicId?: string;
 }

@@ -50,7 +50,7 @@ export class DoctorService {
     return this.doctorRepo.save(doctor);
   }
 
-  async update(id: number, updateDto: UpdateDoctorDto): Promise<Doctor> {
+  async update(id: string, updateDto: UpdateDoctorDto): Promise<Doctor> {
     const doctor = await this.findOne(id);
 
     if (updateDto.clinicId && updateDto.clinicId !== doctor.clinic.id) {
@@ -81,7 +81,7 @@ export class DoctorService {
   }
 
   async uploadPhoto(
-    doctorId: number,
+    doctorId: string,
     file: Express.Multer.File,
   ): Promise<{
     url: string;
@@ -124,19 +124,24 @@ export class DoctorService {
       this.configService.get('MINIO_ENDPOINT');
 
     if (isLocal && minioEndpoint) {
-      // MinIO - публичный URL
+      // MinIO в development - публичный URL
       const bucketName: string | undefined =
         this.configService.get('MINIO_BUCKET');
       return `${minioEndpoint}/${bucketName}/${photoKey}`;
     } else if (isLocal && !minioEndpoint) {
       // Локальное хранилище
       return `/uploads/${photoKey}`;
+    } else if (minioEndpoint) {
+      // MinIO в production - публичный URL
+      const bucketName: string | undefined =
+        this.configService.get('MINIO_BUCKET');
+      return `${minioEndpoint}/${bucketName}/${photoKey}`;
     }
 
     return null;
   }
 
-  async findOne(id: number): Promise<Doctor> {
+  async findOne(id: string): Promise<Doctor> {
     const doctor = await this.doctorRepo.findOne({
       where: { id },
       relations: ['reviews'],
@@ -150,7 +155,7 @@ export class DoctorService {
   }
 
   // Расчет среднего рейтинга
-  async calculateAverageRating(doctorId: number): Promise<number> {
+  async calculateAverageRating(doctorId: string): Promise<number> {
     const doctor = await this.findOne(doctorId);
 
     if (!doctor.reviews || doctor.reviews.length === 0) return 0;
@@ -166,8 +171,8 @@ export class DoctorService {
   }
 
   async isDoctorBelongsToClinic(
-    doctorId: number,
-    clinicId: number,
+    doctorId: string,
+    clinicId: string,
   ): Promise<boolean> {
     const doctor = await this.doctorRepo.findOne({
       where: { id: doctorId },
@@ -176,7 +181,7 @@ export class DoctorService {
     return doctor?.clinic?.id === clinicId;
   }
 
-  async getDoctorWithSchedule(id: number): Promise<Doctor> {
+  async getDoctorWithSchedule(id: string): Promise<Doctor> {
     const doctor = await this.doctorRepo.findOne({
       where: { id },
       relations: ['schedules'], // Загружаем связанное расписание
@@ -190,7 +195,7 @@ export class DoctorService {
   }
 
   async addScheduleToDoctor(
-    doctorId: number,
+    doctorId: string,
     dto: CreateDoctorScheduleDto,
   ): Promise<DoctorSchedule> {
     return this.scheduleService.createSchedule(doctorId, dto);
@@ -253,7 +258,7 @@ export class DoctorService {
     limit?: number;
     minRating?: number;
     specialization?: string;
-    clinicId?: number;
+    clinicId?: string;
   }): Promise<Doctor[]> {
     try {
       const { limit = 10, minRating, specialization, clinicId } = params;

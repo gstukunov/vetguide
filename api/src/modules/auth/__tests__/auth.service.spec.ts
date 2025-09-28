@@ -16,35 +16,39 @@ describe('AuthService', () => {
   let jwtService: JwtService;
 
   const mockVetClinic = {
-    id: 1,
+    id: 'V1StGXR8_Z5jdHi6B-myT',
     name: 'Test Clinic',
     address: 'Test Address',
     inn: '1234567890',
     description: 'Test Description',
     doctors: [],
     users: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
 
   const mockUser: User = {
-    id: 1,
+    id: 'V1StGXR8_Z5jdHi6B-myT',
     phone: '+79123456789',
     password: 'hashedPassword',
     fullName: 'Test User',
     isVerified: true,
     role: UserRole.USER,
     reviews: [],
+    clinic_id: 'V1StGXR8_Z5jdHi6B-myT',
     clinic: mockVetClinic,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
 
   const mockSafeUser = {
-    id: 1,
+    id: 'V1StGXR8_Z5jdHi6B-myT',
     phone: '+79123456789',
     fullName: 'Test User',
     isVerified: true,
     role: UserRole.USER,
     reviews: [],
+    clinic_id: 'V1StGXR8_Z5jdHi6B-myT',
     clinic: mockVetClinic,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -188,14 +192,20 @@ describe('AuthService', () => {
         .mockReturnValueOnce(mockAccessToken)
         .mockReturnValueOnce(mockRefreshToken);
 
-      const result = await service.refresh(1, '+79123456789', UserRole.USER);
+      const result = await service.refresh(
+        'V1StGXR8_Z5jdHi6B-myT',
+        '+79123456789',
+        UserRole.USER,
+      );
 
       expect(result).toEqual({
         accessToken: mockAccessToken,
         refreshToken: mockRefreshToken,
       });
 
-      expect(userService.findById).toHaveBeenCalledWith(1);
+      expect(userService.findById).toHaveBeenCalledWith(
+        'V1StGXR8_Z5jdHi6B-myT',
+      );
       expect(jwtService.sign).toHaveBeenCalledTimes(2);
     });
   });

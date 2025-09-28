@@ -23,7 +23,7 @@ export class UserService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async getMe(userId: number): Promise<SafeUser> {
+  async getMe(userId: string): Promise<SafeUser> {
     const user = await this.userRepo.findOne({
       where: { id: userId },
       relations: ['reviews', 'clinic'],
@@ -98,7 +98,7 @@ export class UserService {
     return { accessToken, refreshToken };
   }
 
-  async updateUserRole(userId: number, newRole: UserRole): Promise<SafeUser> {
+  async updateUserRole(userId: string, newRole: UserRole): Promise<SafeUser> {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) {
       throw new Error('Пользователь не найден');
@@ -127,7 +127,7 @@ export class UserService {
     await this.userRepo.update({ phone }, { isVerified: true });
   }
 
-  async findById(id: number): Promise<User> {
+  async findById(id: string): Promise<User> {
     const user = await this.userRepo.findOne({
       where: { id },
     });

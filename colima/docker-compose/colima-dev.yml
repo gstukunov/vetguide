@@ -59,11 +59,18 @@ services:
     depends_on:
       minio:
         condition: service_healthy
+    volumes:
+      - ./api/scripts/setup-minio-bucket.sh:/setup-minio-bucket.sh:ro
+    environment:
+      MINIO_ALIAS: myminio
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      MINIO_BUCKET: ${MINIO_BUCKET:-vetguide-uploads}
     entrypoint: >
       /bin/sh -c "
-      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD:-minioadmin};
-      /usr/bin/mc mb myminio/${MINIO_BUCKET:-vetguide-uploads} --ignore-existing;
-      /usr/bin/mc policy set public myminio/${MINIO_BUCKET:-vetguide-uploads};
+      chmod +x /setup-minio-bucket.sh &&
+      /setup-minio-bucket.sh;
       exit 0;
       "
     networks:
@@ -157,4 +164,3 @@ volumes:
 networks:
   vetguide-dev-network:
     driver: bridge
-

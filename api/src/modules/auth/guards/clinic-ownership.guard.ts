@@ -14,7 +14,7 @@ export class ClinicOwnershipGuard implements CanActivate {
     // Добавляем async
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-    const doctorId: number = +request.params.doctorId; // Преобразуем в число
+    const doctorId: string = request.params.doctorId;
 
     // Проверка роли
     if (user.role !== UserRole.VET_CLINIC) return false;

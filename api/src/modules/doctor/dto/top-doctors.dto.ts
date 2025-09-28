@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsPositive, Min, Max } from 'class-validator';
+import {
+  IsOptional,
+  IsPositive,
+  Min,
+  Max,
+  IsString,
+  Length,
+  Matches,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class TopDoctorsQueryDto {
@@ -41,11 +49,14 @@ export class TopDoctorsQueryDto {
 
   @ApiProperty({
     description: 'ID клиники для фильтрации',
-    example: 1,
+    example: 'V1StGXR8_Z5jdHi6B-myT',
     required: false,
   })
   @IsOptional()
-  @Type(() => Number)
-  @IsPositive()
-  clinicId?: number;
+  @IsString()
+  @Length(21, 21)
+  @Matches(/^[A-Za-z0-9_-]+$/, {
+    message: 'ID должен содержать только буквы, цифры, дефисы и подчеркивания',
+  })
+  clinicId?: string;
 }

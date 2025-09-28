@@ -1,27 +1,14 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  OneToMany,
-  JoinColumn,
-  ManyToOne,
-} from 'typeorm';
+import { Entity, Column, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
 import { User as UserType } from '../types/user.type';
 import { UserRole } from '../types/role.enum';
 import { Review } from '../../review/entities/review.entity';
 import { VetClinic } from '../../vet-clinic/entities/vet-clinic.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { BaseEntity } from '../../../common/entities/base.entity';
 
 @Entity()
-export class User implements UserType {
-  @ApiProperty({
-    description: 'Уникальный идентификатор пользователя',
-    example: 1,
-  })
-  @PrimaryGeneratedColumn()
-  id: number;
+export class User extends BaseEntity implements UserType {
+  // id наследуется от BaseEntity
 
   @ApiProperty({
     description: 'Номер телефона пользователя',
@@ -75,6 +62,14 @@ export class User implements UserType {
   reviews: Review[];
 
   @ApiProperty({
+    description: 'ID ветклиники',
+    example: 'V1StGXR8_Z5jdHi6B-myT',
+    required: false,
+  })
+  @Column({ nullable: true })
+  clinic_id: string;
+
+  @ApiProperty({
     type: () => VetClinic,
     description: 'Связанная ветеринарная клиника',
     required: false,
@@ -82,18 +77,4 @@ export class User implements UserType {
   @ManyToOne(() => VetClinic, (clinic) => clinic.users)
   @JoinColumn({ name: 'clinic_id' })
   clinic: VetClinic;
-
-  @ApiProperty({
-    description: 'Дата создания пользователя',
-    example: '2024-01-01T00:00:00.000Z',
-  })
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @ApiProperty({
-    description: 'Дата последнего обновления пользователя',
-    example: '2024-01-01T00:00:00.000Z',
-  })
-  @UpdateDateColumn()
-  updatedAt: Date;
 }

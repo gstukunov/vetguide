@@ -20,19 +20,22 @@ describe('DoctorService', () => {
   let configService: ConfigService;
 
   const mockVetClinic = {
-    id: 1,
+    id: 'V1StGXR8_Z5jdHi6B-myT',
     name: 'Тестовая клиника',
     address: 'Тестовый адрес',
     inn: '1234567890',
     description: 'Тестовое описание',
     doctors: [],
     users: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
 
   const mockDoctor = {
-    id: 1,
-    photoKey: 'avatars/doctors/1/uuid.jpeg',
+    id: 'V1StGXR8_Z5jdHi6B-myT',
+    photoKey: 'avatars/doctors/V1StGXR8_Z5jdHi6B-myT/uuid.jpeg',
     fullName: 'Доктор Иван Иванов',
+    clinicId: 'V1StGXR8_Z5jdHi6B-myT',
     description: 'Опытный ветеринар с 10-летним стажем',
     specialization: ['Кардиология', 'Хирургия'],
     clinic: mockVetClinic,
@@ -43,7 +46,7 @@ describe('DoctorService', () => {
   };
 
   const mockSafeUser = {
-    id: 1,
+    id: 'V1StGXR8_Z5jdHi6B-myT',
     phone: '+79123456789',
     fullName: 'Доктор Иван Иванов',
     isVerified: true,
@@ -120,7 +123,7 @@ describe('DoctorService', () => {
         fullName: 'Доктор Иван Иванов',
         description: 'Опытный ветеринар с 10-летним стажем',
         specialization: ['Кардиология', 'Хирургия'],
-        clinicId: 1,
+        clinicId: 'V1StGXR8_Z5jdHi6B-myT',
       };
 
       jest.spyOn(clinicService, 'findOne').mockResolvedValue(mockVetClinic);
@@ -130,7 +133,9 @@ describe('DoctorService', () => {
       const result = await service.create(createDto);
 
       expect(result).toEqual(mockDoctor);
-      expect(clinicService.findOne).toHaveBeenCalledWith(1);
+      expect(clinicService.findOne).toHaveBeenCalledWith(
+        'V1StGXR8_Z5jdHi6B-myT',
+      );
       expect(doctorRepo.create).toHaveBeenCalledWith({
         fullName: createDto.fullName,
         description: createDto.description,
@@ -144,12 +149,13 @@ describe('DoctorService', () => {
     it('должен создать врача без необязательных свойств', async () => {
       const createDto: CreateDoctorDto = {
         fullName: 'Доктор Мария Петрова',
-        clinicId: 1,
+        clinicId: 'V1StGXR8_Z5jdHi6B-myT',
       };
 
       const doctorWithoutOptional = {
         ...mockDoctor,
-        id: 2,
+        id: 'V2StGXR8_Z5jdHi6B-myU',
+        clinicId: 'V1StGXR8_Z5jdHi6B-myT',
         fullName: 'Доктор Мария Петрова',
         description: '',
         specialization: [],
@@ -181,6 +187,7 @@ describe('DoctorService', () => {
 
       const updatedDoctor = {
         ...mockDoctor,
+        clinicId: 'V1StGXR8_Z5jdHi6B-myT',
         description: 'Обновленное описание',
         specialization: ['Дерматология', 'Кардиология'],
       };
@@ -188,20 +195,25 @@ describe('DoctorService', () => {
       jest.spyOn(service, 'findOne').mockResolvedValue(mockDoctor);
       jest.spyOn(doctorRepo, 'save').mockResolvedValue(updatedDoctor);
 
-      const result = await service.update(1, updateDto);
+      const result = await service.update('V1StGXR8_Z5jdHi6B-myT', updateDto);
 
       expect(result).toEqual(updatedDoctor);
       expect(doctorRepo.save).toHaveBeenCalledWith(updatedDoctor);
     });
 
     it('должен обновить клинику, если указан clinicId', async () => {
-      const newClinic = { ...mockVetClinic, id: 2, name: 'Новая клиника' };
+      const newClinic = {
+        ...mockVetClinic,
+        id: 'V2StGXR8_Z5jdHi6B-myU',
+        name: 'Новая клиника',
+      };
       const updateDto: UpdateDoctorDto = {
-        clinicId: 2,
+        clinicId: 'V2StGXR8_Z5jdHi6B-myU',
       };
 
       const doctorWithNewClinic = {
         ...mockDoctor,
+        clinicId: 'V2StGXR8_Z5jdHi6B-myU',
         clinic: newClinic,
       };
 
@@ -209,10 +221,12 @@ describe('DoctorService', () => {
       jest.spyOn(clinicService, 'findOne').mockResolvedValue(newClinic);
       jest.spyOn(doctorRepo, 'save').mockResolvedValue(doctorWithNewClinic);
 
-      const result = await service.update(1, updateDto);
+      const result = await service.update('V1StGXR8_Z5jdHi6B-myT', updateDto);
 
       expect(result.clinic).toEqual(newClinic);
-      expect(clinicService.findOne).toHaveBeenCalledWith(2);
+      expect(clinicService.findOne).toHaveBeenCalledWith(
+        'V2StGXR8_Z5jdHi6B-myU',
+      );
     });
   });
 
@@ -235,7 +249,7 @@ describe('DoctorService', () => {
         {
           ...mockDoctor,
           photoUrl:
-            'http://localhost:9000/vetguide-images/avatars/doctors/1/uuid.jpeg',
+            'http://localhost:9000/vetguide-images/avatars/doctors/V1StGXR8_Z5jdHi6B-myT/uuid.jpeg',
         },
       ]);
     });
@@ -266,7 +280,7 @@ describe('DoctorService', () => {
         {
           ...mockDoctor,
           photoUrl:
-            'http://localhost:9000/vetguide-images/avatars/doctors/1/uuid.jpeg',
+            'http://localhost:9000/vetguide-images/avatars/doctors/V1StGXR8_Z5jdHi6B-myT/uuid.jpeg',
         },
       ]);
     });
@@ -296,6 +310,7 @@ describe('DoctorService', () => {
 
       const updatedDoctor = {
         ...mockDoctor,
+        clinicId: 'V1StGXR8_Z5jdHi6B-myT',
         photoKey: mockUploadResult.key,
       };
 
@@ -303,11 +318,14 @@ describe('DoctorService', () => {
       jest.spyOn(s3Service, 'uploadImage').mockResolvedValue(mockUploadResult);
       jest.spyOn(doctorRepo, 'save').mockResolvedValue(updatedDoctor);
 
-      const result = await service.uploadPhoto(1, mockFile);
+      const result = await service.uploadPhoto(
+        'V1StGXR8_Z5jdHi6B-myT',
+        mockFile,
+      );
 
       expect(s3Service.uploadImage).toHaveBeenCalledWith(
         mockFile,
-        'avatars/doctors/1',
+        'avatars/doctors/V1StGXR8_Z5jdHi6B-myT',
         {
           maxWidth: 500,
           maxHeight: 500,
@@ -327,9 +345,9 @@ describe('DoctorService', () => {
     });
 
     it('должен получить постоянный URL фото по ключу', () => {
-      const photoKey = 'avatars/doctors/1/uuid.jpeg';
+      const photoKey = 'avatars/doctors/V1StGXR8_Z5jdHi6B-myT/uuid.jpeg';
       const expectedUrl =
-        'http://localhost:9000/vetguide-images/avatars/doctors/1/uuid.jpeg';
+        'http://localhost:9000/vetguide-images/avatars/doctors/V1StGXR8_Z5jdHi6B-myT/uuid.jpeg';
 
       const result = service.getPhotoUrl(photoKey);
 

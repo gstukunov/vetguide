@@ -143,10 +143,15 @@ export interface Doctor {
    */
   id: number;
   /**
-   * Фото врача
+   * Ключ фото врача в S3
+   * @example "avatars/doctors/1/uuid.jpeg"
+   */
+  photoKey: string;
+  /**
+   * URL фото врача
    * @example "https://example.com/photo.jpg"
    */
-  photo: string;
+  photoUrl: string | null;
   /**
    * Полное имя врача
    * @example "Иванов Иван Иванович"
@@ -299,8 +304,8 @@ export interface CreateDoctorDto {
   fullName: string;
   /** Описание врача */
   description?: string;
-  /** URL фотографии врача */
-  photo?: string;
+  /** Ключ фотографии врача в S3 */
+  photoKey?: string;
   /**
    * Список специалитетов врача
    * @example ["Терапевт","Хирург","Дерматолог"]
@@ -315,8 +320,8 @@ export interface UpdateDoctorDto {
   fullName?: string;
   /** Doctor description */
   description?: string;
-  /** Doctor photo URL */
-  photo?: string;
+  /** Doctor photo key in S3 */
+  photoKey?: string;
   /**
    * Array of doctor specializations
    * @example ["Cardiology","Surgery","Dermatology"]

@@ -1,6 +1,7 @@
 import { FC } from 'react';
 
 import Image from 'next/image';
+import Link from 'next/link';
 
 import { DogIcon } from '@/(shared)/icons/dog';
 import Button from '@/(shared)/ui/button';
@@ -10,10 +11,10 @@ import styles from './styles.module.scss';
 
 export const DoctorCard: FC<DoctorCardProps> = ({ doctor }) => {
   return (
-    <div className={styles.doctorCard}>
-      {doctor.photo ? (
+    <Link href={`/doctor/${doctor.id}`} className={styles.doctorCard}>
+      {doctor.photoUrl ? (
         <Image
-          src={doctor.photo}
+          src={doctor.photoUrl}
           className={styles.avatarImage}
           alt={doctor.fullName}
           width={100}
@@ -47,6 +48,6 @@ export const DoctorCard: FC<DoctorCardProps> = ({ doctor }) => {
           <Button className={styles.bookButton}>Записаться</Button>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };

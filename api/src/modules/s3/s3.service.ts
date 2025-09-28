@@ -199,6 +199,9 @@ export class S3Service {
         if (this.isLocal && this.configService.get('MINIO_ENDPOINT')) {
           // MinIO - публичные ссылки
           url = `${this.endpoint}/${this.bucketName}/${key}`;
+        } else if (this.configService.get('MINIO_ENDPOINT')) {
+          // MinIO в production - публичные ссылки
+          url = `${this.endpoint}/${this.bucketName}/${key}`;
         } else {
           // AWS S3
           url = `https://${this.bucketName}.s3.${this.region}.amazonaws.com/${key}`;
@@ -224,6 +227,9 @@ export class S3Service {
 
           if (this.isLocal && this.configService.get('MINIO_ENDPOINT')) {
             // MinIO - публичные ссылки для миниатюр
+            thumbnailUrl = `${this.endpoint}/${this.bucketName}/${thumbnailKey}`;
+          } else if (this.configService.get('MINIO_ENDPOINT')) {
+            // MinIO в production - публичные ссылки для миниатюр
             thumbnailUrl = `${this.endpoint}/${this.bucketName}/${thumbnailKey}`;
           } else {
             thumbnailUrl = `https://${this.bucketName}.s3.${this.region}.amazonaws.com/${thumbnailKey}`;

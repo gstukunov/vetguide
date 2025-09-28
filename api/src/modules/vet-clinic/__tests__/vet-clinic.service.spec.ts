@@ -10,13 +10,15 @@ describe('VetClinicService', () => {
   let clinicRepository: Repository<VetClinic>;
 
   const mockVetClinic = {
-    id: 1,
+    id: 'V1StGXR8_Z5jdHi6B-myT',
     name: 'Тестовая ветеринарная клиника',
     address: 'Тестовый адрес, 123',
     inn: '1234567890',
     description: 'Тестовое описание клиники',
     doctors: [],
     users: [],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
 
   beforeEach(async () => {
@@ -69,19 +71,19 @@ describe('VetClinicService', () => {
     it('должен найти клинику по ID', async () => {
       jest.spyOn(clinicRepository, 'findOne').mockResolvedValue(mockVetClinic);
 
-      const result = await service.findOne(1);
+      const result = await service.findOne('V1StGXR8_Z5jdHi6B-myT');
 
       expect(result).toEqual(mockVetClinic);
       expect(clinicRepository.findOne).toHaveBeenCalledWith({
-        where: { id: 1 },
+        where: { id: 'V1StGXR8_Z5jdHi6B-myT' },
       });
     });
 
     it('должен выбросить ошибку, если клиника не найдена', async () => {
       jest.spyOn(clinicRepository, 'findOne').mockResolvedValue(null);
 
-      await expect(service.findOne(999)).rejects.toThrow(
-        'Vet clinic with ID 999 not found',
+      await expect(service.findOne('V999StGXR8_Z5jdHi6B-myT')).rejects.toThrow(
+        'Vet clinic with ID V999StGXR8_Z5jdHi6B-myT not found',
       );
     });
   });

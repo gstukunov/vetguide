@@ -1,29 +1,30 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  OneToMany,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { VetClinic } from '../../vet-clinic/entities/vet-clinic.entity';
 import { Review } from '../../review/entities/review.entity';
 import { DoctorSchedule } from '../../doctor-schedule/entities/doctor-schedule.entity';
+import { BaseEntity } from '../../../common/entities/base.entity';
 
 @Entity()
-export class Doctor {
-  @ApiProperty({ description: 'Уникальный идентификатор врача', example: 1 })
-  @PrimaryGeneratedColumn()
-  id: number;
+export class Doctor extends BaseEntity {
+  // id наследуется от BaseEntity
 
   @ApiProperty({
     description: 'Ключ фото врача в S3',
-    example: 'avatars/doctors/1/uuid.jpeg',
+    example: 'avatars/doctors/V1StGXR8_Z5jdHi6B-myT/uuid.jpeg',
   })
   @Column({ nullable: true })
   photoKey: string;
+
+  // Вычисляемое поле, не сохраняется в БД
+  @ApiProperty({
+    description: 'URL фото врача',
+    example: 'https://example.com/photo.jpg',
+    nullable: true,
+    type: String,
+  })
+  photoUrl?: string | null;
 
   @ApiProperty({
     description: 'Полное имя врача',
@@ -50,11 +51,18 @@ export class Doctor {
   specialization: string[];
 
   @ApiProperty({
+    description: 'ID ветклиники',
+    example: 'V1StGXR8_Z5jdHi6B-myT',
+  })
+  @Column({ nullable: true })
+  clinicId: string;
+
+  @ApiProperty({
     description: 'Ветклиника, в которой работает врач',
     type: () => VetClinic,
   })
   @ManyToOne(() => VetClinic, (clinic) => clinic.doctors)
-  @JoinColumn()
+  @JoinColumn({ name: 'clinicId' })
   clinic: VetClinic;
 
   @ApiProperty({

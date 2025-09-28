@@ -16,7 +16,7 @@ export class VetClinicService {
     return this.clinicRepository.save(clinic);
   }
 
-  async findOne(id: number): Promise<VetClinic> {
+  async findOne(id: string): Promise<VetClinic> {
     const clinic = await this.clinicRepository.findOne({
       where: { id },
     });

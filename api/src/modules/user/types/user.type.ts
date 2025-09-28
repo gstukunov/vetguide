@@ -3,7 +3,7 @@ import { Review } from '../../review/entities/review.entity';
 import { VetClinic } from '../../vet-clinic/entities/vet-clinic.entity';
 
 export type User = {
-  id: number;
+  id: string;
   phone: string;
   password: string;
   fullName: string;

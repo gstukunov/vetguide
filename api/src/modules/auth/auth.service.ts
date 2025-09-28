@@ -60,7 +60,7 @@ export class AuthService {
   }
 
   async refresh(
-    userId: number,
+    userId: string,
     phone: string,
     role: string,
   ): Promise<AccessDto> {

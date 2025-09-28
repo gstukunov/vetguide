@@ -62,7 +62,7 @@ export class DoctorScheduleController {
     @Param('doctorId') doctorId: string,
     @Body() dto: CreateDoctorScheduleDto,
   ) {
-    return this.scheduleService.createSchedule(+doctorId, dto);
+    return this.scheduleService.createSchedule(doctorId, dto);
   }
 
   @Put(':id')
@@ -99,7 +99,7 @@ export class DoctorScheduleController {
     description: 'Запись в расписании не найдена',
   })
   update(@Param('id') id: string, @Body() dto: UpdateDoctorScheduleDto) {
-    return this.scheduleService.updateSchedule(+id, dto);
+    return this.scheduleService.updateSchedule(id, dto);
   }
 
   @Get()
@@ -126,6 +126,6 @@ export class DoctorScheduleController {
     description: 'Врач не найден',
   })
   findAll(@Param('doctorId') doctorId: string) {
-    return this.scheduleService.getDoctorSchedules(+doctorId);
+    return this.scheduleService.getDoctorSchedules(doctorId);
   }
 }

@@ -38,6 +38,6 @@ export class ReviewController {
     @Param('id') id: string,
     @Body() updateDto: UpdateReviewStatusDto,
   ) {
-    return this.reviewService.updateStatus(parseInt(id), updateDto);
+    return this.reviewService.updateStatus(id, updateDto);
   }
 }

@@ -145,7 +145,7 @@ export class DoctorController {
   @ApiParam({
     name: 'id',
     description: 'ID врача',
-    type: Number,
+    type: String,
   })
   @ApiBody({ type: UpdateDoctorDto })
   @ApiResponse({
@@ -173,7 +173,7 @@ export class DoctorController {
   @Roles(UserRole.SUPER_ADMIN)
   @UseInterceptors(FileInterceptor('image'))
   @ApiOperation({ summary: 'Загрузить/обновить фото врача' })
-  @ApiParam({ name: 'id', description: 'ID врача', type: Number })
+  @ApiParam({ name: 'id', description: 'ID врача', type: String })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -207,7 +207,7 @@ export class DoctorController {
   @ApiParam({
     name: 'id',
     description: 'ID врача',
-    type: Number,
+    type: String,
   })
   @ApiResponse({
     status: 200,
@@ -240,7 +240,7 @@ export class DoctorController {
   @ApiParam({
     name: 'id',
     description: 'ID врача',
-    type: Number,
+    type: String,
   })
   @ApiResponse({
     status: 200,
@@ -275,7 +275,7 @@ export class DoctorController {
   @ApiParam({
     name: 'id',
     description: 'ID врача',
-    type: Number,
+    type: String,
   })
   @ApiResponse({
     status: 200,

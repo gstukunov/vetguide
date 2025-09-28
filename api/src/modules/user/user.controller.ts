@@ -54,7 +54,7 @@ export class UserController {
     status: HttpStatus.UNAUTHORIZED,
     description: 'Пользователь не авторизован',
   })
-  async getMe(@User('userId') userId: number): Promise<SafeUserDto> {
+  async getMe(@User('userId') userId: string): Promise<SafeUserDto> {
     return this.userService.getMe(userId);
   }
 

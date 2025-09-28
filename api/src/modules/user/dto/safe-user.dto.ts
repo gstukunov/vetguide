@@ -4,8 +4,8 @@ import { Review } from '../../review/entities/review.entity';
 import { VetClinic } from '../../vet-clinic/entities/vet-clinic.entity';
 
 export class SafeUserDto {
-  @ApiProperty()
-  id: number;
+  @ApiProperty({ example: 'V1StGXR8_Z5jdHi6B-myT' })
+  id: string;
 
   @ApiProperty({ example: '+79123456789' })
   phone: string;

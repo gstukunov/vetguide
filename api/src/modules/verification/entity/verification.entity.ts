@@ -1,14 +1,9 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-} from 'typeorm';
+import { Entity, Column } from 'typeorm';
+import { BaseEntity } from '../../../common/entities/base.entity';
 
 @Entity()
-export class VerificationCode {
-  @PrimaryGeneratedColumn()
-  id: number;
+export class VerificationCode extends BaseEntity {
+  // id наследуется от BaseEntity
 
   @Column()
   phone: string;
@@ -19,6 +14,5 @@ export class VerificationCode {
   @Column({ default: false })
   isVerified: boolean; // Добавляем флаг подтверждения
 
-  @CreateDateColumn()
-  createdAt: Date;
+  // createdAt и updatedAt наследуются от BaseEntity
 }

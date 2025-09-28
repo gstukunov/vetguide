@@ -17,7 +17,7 @@ export class DoctorScheduleService {
   ) {}
 
   async createSchedule(
-    doctorId: number,
+    doctorId: string,
     dto: CreateDoctorScheduleDto,
   ): Promise<DoctorSchedule> {
     const doctor = await this.doctorRepo.findOne({
@@ -30,7 +30,7 @@ export class DoctorScheduleService {
   }
 
   async updateSchedule(
-    id: number,
+    id: string,
     dto: UpdateDoctorScheduleDto,
   ): Promise<DoctorSchedule> {
     const schedule = await this.scheduleRepo.findOne({
@@ -41,7 +41,7 @@ export class DoctorScheduleService {
     return this.scheduleRepo.save({ ...schedule, ...dto });
   }
 
-  async getDoctorSchedules(doctorId: number): Promise<DoctorSchedule[]> {
+  async getDoctorSchedules(doctorId: string): Promise<DoctorSchedule[]> {
     return this.scheduleRepo.find({
       where: { doctor: { id: doctorId } },
       relations: ['doctor'],

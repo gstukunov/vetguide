@@ -17,7 +17,7 @@ export class ReviewService {
     private readonly userService: UserService,
   ) {}
 
-  async create(createDto: CreateReviewDto, userId: number): Promise<Review> {
+  async create(createDto: CreateReviewDto, userId: string): Promise<Review> {
     const doctor = await this.doctorService.findOne(createDto.doctorId);
     const user = await this.userService.findById(userId); // Используем новый метод
 
@@ -32,7 +32,7 @@ export class ReviewService {
   }
 
   async updateStatus(
-    id: number,
+    id: string,
     updateDto: UpdateReviewStatusDto,
   ): Promise<Review> {
     const review = await this.reviewRepository.findOne({ where: { id } });
