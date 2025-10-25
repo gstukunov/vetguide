@@ -1,37 +1,29 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { Doctor } from '../../doctor/entities/doctor.entity';
 import { BaseEntity } from '../../../common/entities/base.entity';
 
-export enum WeekDay {
-  MONDAY = 'Понедельник',
-  TUESDAY = 'Вторник',
-  WEDNESDAY = 'Среда',
-  THURSDAY = 'Четверг',
-  FRIDAY = 'Пятница',
-  SATURDAY = 'Суббота',
-  SUNDAY = 'Воскресенье',
-}
-
 @Entity()
+@Index(['doctor_id', 'date', 'timeSlot'], { unique: true })
 export class DoctorSchedule extends BaseEntity {
   // id наследуется от BaseEntity
 
   @ApiProperty({
-    enum: WeekDay,
-    description: 'День недели',
-    example: WeekDay.MONDAY,
-    enumName: 'WeekDay',
+    description: 'Дата расписания',
+    example: '2024-01-15',
   })
-  @Column({
-    type: 'enum',
-    enum: WeekDay,
-    nullable: false,
-  })
-  dayOfWeek: WeekDay;
+  @Column({ type: 'date', nullable: false })
+  date: string;
 
   @ApiProperty({
-    description: 'Доступен ли врач в этот день',
+    description: 'Временной слот (формат HH:mm)',
+    example: '09:00',
+  })
+  @Column({ type: 'varchar', length: 5, nullable: false })
+  timeSlot: string;
+
+  @ApiProperty({
+    description: 'Доступен ли временной слот для записи',
     example: true,
     default: true,
   })

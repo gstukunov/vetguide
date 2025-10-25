@@ -5,12 +5,16 @@ import {
   Param,
   Put,
   Get,
+  Delete,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { DoctorScheduleService } from './doctor-schedule.service';
 import {
   CreateDoctorScheduleDto,
   UpdateDoctorScheduleDto,
+  BulkCreateDoctorScheduleDto,
+  GetDoctorScheduleDto,
 } from './dto/doctor-schedule.dto';
 import {
   ApiBearerAuth,
@@ -19,6 +23,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiBody,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { ClinicOwnershipGuard } from '../auth/guards/clinic-ownership.guard';
 import { DoctorSchedule } from './entities/doctor-schedule.entity';
@@ -32,23 +37,27 @@ export class DoctorScheduleController {
 
   @Post()
   @ApiOperation({
-    summary: 'Создать запись в расписании врача',
+    summary: 'Создать временной слот в расписании врача',
     description:
       'Доступно только для пользователей с ролью VET_CLINIC своей клиники',
   })
   @ApiParam({
     name: 'doctorId',
     description: 'ID врача',
-    type: Number,
+    type: String,
   })
   @ApiBody({
     type: CreateDoctorScheduleDto,
-    description: 'Данные для создания расписания',
+    description: 'Данные для создания временного слота',
   })
   @ApiResponse({
     status: 201,
-    description: 'Запись в расписании успешно создана',
+    description: 'Временной слот успешно создан',
     type: DoctorSchedule,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Временной слот уже существует для этой даты и времени',
   })
   @ApiResponse({
     status: 403,
@@ -65,21 +74,55 @@ export class DoctorScheduleController {
     return this.scheduleService.createSchedule(doctorId, dto);
   }
 
+  @Post('bulk')
+  @ApiOperation({
+    summary: 'Массовое создание временных слотов',
+    description: 'Создание расписания для нескольких дней и временных слотов',
+  })
+  @ApiParam({
+    name: 'doctorId',
+    description: 'ID врача',
+    type: String,
+  })
+  @ApiBody({
+    type: BulkCreateDoctorScheduleDto,
+    description: 'Данные для массового создания расписания',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Временные слоты успешно созданы',
+    type: [DoctorSchedule],
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Доступ запрещен',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Врач не найден',
+  })
+  bulkCreate(
+    @Param('doctorId') doctorId: string,
+    @Body() dto: BulkCreateDoctorScheduleDto,
+  ) {
+    return this.scheduleService.bulkCreateSchedule(doctorId, dto);
+  }
+
   @Put(':id')
   @ApiOperation({
-    summary: 'Обновить статус доступности врача',
+    summary: 'Обновить статус доступности временного слота',
     description:
       'Доступно только для пользователей с ролью VET_CLINIC своей клиники',
   })
   @ApiParam({
     name: 'doctorId',
     description: 'ID врача',
-    type: Number,
+    type: String,
   })
   @ApiParam({
     name: 'id',
     description: 'ID записи в расписании',
-    type: Number,
+    type: String,
   })
   @ApiBody({
     type: UpdateDoctorScheduleDto,
@@ -105,11 +148,30 @@ export class DoctorScheduleController {
   @Get()
   @ApiOperation({
     summary: 'Получить расписание врача',
-    description: 'Получение всего расписания конкретного врача',
+    description:
+      'Получение расписания конкретного врача с возможностью фильтрации',
   })
   @ApiParam({
     name: 'doctorId',
     description: 'ID врача',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'startDate',
+    description: 'Дата начала периода (YYYY-MM-DD)',
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    name: 'endDate',
+    description: 'Дата окончания периода (YYYY-MM-DD)',
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    name: 'weeks',
+    description: 'Количество недель для получения',
+    required: false,
     type: Number,
   })
   @ApiResponse({
@@ -125,7 +187,78 @@ export class DoctorScheduleController {
     status: 404,
     description: 'Врач не найден',
   })
-  findAll(@Param('doctorId') doctorId: string) {
-    return this.scheduleService.getDoctorSchedules(doctorId);
+  findAll(
+    @Param('doctorId') doctorId: string,
+    @Query() query: GetDoctorScheduleDto,
+  ) {
+    return this.scheduleService.getDoctorSchedules(doctorId, query);
+  }
+
+  @Get('ui')
+  @ApiOperation({
+    summary: 'Получить расписание для UI',
+    description:
+      'Получение расписания в формате, оптимизированном для UI компонента',
+  })
+  @ApiParam({
+    name: 'doctorId',
+    description: 'ID врача',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'weeks',
+    description: 'Количество недель для получения (по умолчанию 4)',
+    required: false,
+    type: Number,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Расписание в формате для UI',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Доступ запрещен',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Врач не найден',
+  })
+  getScheduleForUI(
+    @Param('doctorId') doctorId: string,
+    @Query('weeks') weeks?: number,
+  ) {
+    return this.scheduleService.getScheduleForUI(doctorId, weeks);
+  }
+
+  @Delete(':id')
+  @ApiOperation({
+    summary: 'Удалить временной слот',
+    description:
+      'Доступно только для пользователей с ролью VET_CLINIC своей клиники',
+  })
+  @ApiParam({
+    name: 'doctorId',
+    description: 'ID врача',
+    type: String,
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID записи в расписании',
+    type: String,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Временной слот успешно удален',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Доступ запрещен',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Запись в расписании не найдена',
+  })
+  delete(@Param('id') id: string) {
+    return this.scheduleService.deleteSchedule(id);
   }
 }
