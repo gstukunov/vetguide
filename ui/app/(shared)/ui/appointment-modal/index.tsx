@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import Image from 'next/image';
+
+import clsx from 'clsx';
 
 import { DogIcon } from '@/(shared)/icons/dog';
 import Button from '@/(shared)/ui/button';
@@ -23,11 +25,27 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
   onTimeSlotSelect,
   onWeekChange,
 }) => {
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 300); // Match animation duration
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+    <div
+      className={clsx(styles.modalOverlay, { [styles.closing]: isClosing })}
+      onClick={handleClose}
+    >
+      <div
+        className={clsx(styles.modal, { [styles.closing]: isClosing })}
+        onClick={e => e.stopPropagation()}
+      >
         <div className={styles.doctorInfo}>
           <div className={styles.doctorPhoto}>
             {doctor?.photoUrl ? (
@@ -86,7 +104,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
           </Button>
         </div>
 
-        <button className={styles.closeButton} onClick={onClose}>
+        <button className={styles.closeButton} onClick={handleClose}>
           ×
         </button>
       </div>

@@ -17,6 +17,10 @@
     padding: 0;
     align-items: flex-end;
   }
+
+  &.closing {
+    animation: fadeOut 0.3s ease-in;
+  }
 }
 
 @keyframes fadeIn {
@@ -34,6 +38,24 @@
   }
   to {
     transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
 
@@ -212,6 +234,10 @@
     height: fit-content;
     border-radius: 16px 16px 0 0;
     animation: slideUp 0.3s ease-out;
+
+    &.closing {
+      animation: slideDown 0.3s ease-in;
+    }
   }
 
   .doctorInfo {
@@ -234,5 +260,9 @@
 
   .costValue {
     font-size: 20px;
+  }
+
+  .closeButton {
+    display: none;
   }
 }
