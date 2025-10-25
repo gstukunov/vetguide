@@ -35,4 +35,4 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
-<!-- npx swagger-typescript-api generate -p ./swagger.json -o ./ -n bff.d.ts --no-client -->
+<!-- npx swagger-typescript-api generate -p http://localhost:3001/swagger.json -o ./ -n api.d.ts --no-client -->

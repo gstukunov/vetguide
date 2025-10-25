@@ -1,6 +1,20 @@
 .doctorPage {
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding-bottom: 80px;
+
+  @media (min-width: 769px) {
+    padding-bottom: 0;
+  }
+
+  &.modalOpen {
+    overflow: hidden;
+  }
 }
 .headerBlock {
   width: 100%;
@@ -14,4 +28,184 @@
       padding: 7px 16px;
     }
   }
+}
+
+.doctorBlock {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 80px;
+  .doctorPhotoContainer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 47px;
+
+    .doctorPhoto {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .avatar {
+      width: 500px;
+      height: 500px;
+      border-radius: 5%;
+      overflow: hidden;
+    }
+
+    .avatarImage {
+      width: 500px;
+      height: 500px;
+      border-radius: 5%;
+      object-fit: cover;
+    }
+
+    .doctorNameContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+
+      .doctorName {
+        font-size: 58px;
+        font-weight: 700;
+        width: 100%;
+        text-align: center;
+        color: var(--primary-color-text);
+      }
+
+      .doctorSpecialization {
+        font-size: 16px;
+        font-weight: 400;
+        color: var(--primary-color-text);
+        padding: 8px 16px;
+        background-color: var(--tertiary-color-bg);
+        border-radius: 4px;
+      }
+    }
+  }
+  .doctorInfo {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 80px;
+  }
+  .doctorDescriptionContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 30px;
+    .doctorAbout {
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--primary-color-text);
+    }
+    .doctorDescription {
+      font-size: 24px;
+      font-weight: 400;
+      color: var(--primary-color-text);
+    }
+  }
+  .doctorLineContainer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 60px;
+    .doctorLine {
+      width: 100%;
+      height: 2px;
+      background-color: var(--primary-color-bg);
+    }
+    .doctorClinicContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 30px;
+      width: 100%;
+      .doctorClinicTitle {
+        font-size: 48px;
+        font-weight: 700;
+        color: var(--primary-color-text);
+      }
+      .doctorClinicInfoWithLogo {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        .clinicAvatar {
+          width: 80px;
+          height: 80px;
+          border-radius: 100%;
+          overflow: hidden;
+          background-color: var(--tertiary-color-bg);
+          display: flex;
+          align-items: center;
+          font-size: 16px;
+          justify-content: center;
+        }
+        .doctorClinic {
+          font-size: 24px;
+          font-weight: 400;
+          color: var(--primary-color-text);
+        }
+      }
+      .doctorClinicAddressContainer {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        .doctorClinicAddressHeader {
+          font-size: 20px;
+          font-weight: 600;
+          color: var(--primary-color-text);
+        }
+        .doctorClinicAddress {
+          font-size: 20px;
+          font-weight: 400;
+          color: var(--primary-color-text);
+        }
+        .doctorClinicPhone {
+          font-size: 20px;
+          font-weight: 400;
+          color: var(--tertiary-color-text);
+        }
+      }
+    }
+  }
+
+  .scheduleSection {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+}
+
+.fixedBottomButton {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  z-index: 1000;
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
+}
+
+.bookAppointmentButton {
+  width: 100%;
+  height: 48px;
+  font-size: 16px;
+  font-weight: 600;
 }

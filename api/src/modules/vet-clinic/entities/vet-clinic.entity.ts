@@ -6,8 +6,6 @@ import { BaseEntity } from '../../../common/entities/base.entity';
 
 @Entity()
 export class VetClinic extends BaseEntity {
-  // id наследуется от BaseEntity
-
   @ApiProperty({
     description: 'Адрес клиники',
     example: 'ул. Тверская, д. 1, Москва',
@@ -32,6 +30,13 @@ export class VetClinic extends BaseEntity {
   })
   @Column({ type: 'text' })
   description: string;
+
+  @ApiProperty({
+    description: 'Телефон клиники',
+    example: '+79001234567',
+  })
+  @Column({ nullable: true })
+  phone: string;
 
   @ApiProperty({
     description: 'Список врачей в клинике',

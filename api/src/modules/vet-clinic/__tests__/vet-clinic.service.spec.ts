@@ -16,6 +16,7 @@ describe('VetClinicService', () => {
     inn: '1234567890',
     description: 'Тестовое описание клиники',
     doctors: [],
+    phone: '1234567890',
     users: [],
     createdAt: new Date(),
     updatedAt: new Date(),

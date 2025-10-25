@@ -27,6 +27,7 @@ describe('DoctorService', () => {
     description: 'Тестовое описание',
     doctors: [],
     users: [],
+    phone: '+79123456789',
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -36,6 +37,7 @@ describe('DoctorService', () => {
     photoKey: 'avatars/doctors/V1StGXR8_Z5jdHi6B-myT/uuid.jpeg',
     fullName: 'Доктор Иван Иванов',
     clinicId: 'V1StGXR8_Z5jdHi6B-myT',
+    phone: '+79123456789',
     description: 'Опытный ветеринар с 10-летним стажем',
     specialization: ['Кардиология', 'Хирургия'],
     clinic: mockVetClinic,

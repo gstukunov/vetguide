@@ -22,6 +22,7 @@ describe('AuthService', () => {
     inn: '1234567890',
     description: 'Test Description',
     doctors: [],
+    phone: '+79123456789',
     users: [],
     createdAt: new Date(),
     updatedAt: new Date(),

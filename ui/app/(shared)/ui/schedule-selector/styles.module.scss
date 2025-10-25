@@ -1,0 +1,271 @@
+.scheduleSelector {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  background-color: white;
+  border-radius: 12px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--primary-color-text);
+  margin: 0;
+}
+
+.month {
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--primary-color-text);
+}
+
+.dateSelector {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.navButton {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background-color: transparent;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--primary-color-text);
+  cursor: pointer;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background-color: var(--tertiary-color-bg);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+.datesContainer {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+  overflow-x: auto;
+  padding: 4px 0;
+
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--tertiary-color-bg);
+    border-radius: 2px;
+  }
+}
+
+.dateButton {
+  min-width: 80px;
+  height: 60px;
+  border: none;
+  background-color: var(--tertiary-color-bg);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover:not(:disabled) {
+    background-color: var(--primary-color-bg);
+    color: var(--primary-color-text);
+  }
+
+  &.today {
+    background-color: var(--secondary-color-bg);
+
+    &:hover:not(:disabled) {
+      background-color: var(--primary-color-bg);
+      color: var(--primary-color-text);
+    }
+  }
+
+  &.selected {
+    background-color: var(--primary-color-bg);
+    color: var(--primary-color-text);
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: var(--tertiary-color-bg);
+
+    &:hover {
+      background-color: var(--tertiary-color-bg);
+    }
+  }
+}
+
+.dateContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.todayLabel {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary-color-icon);
+}
+
+.dayNumber {
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--primary-color-icon);
+}
+
+.dayOfWeek {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--primary-color-icon);
+}
+
+.timeSlotsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.timeSlot {
+  height: 50px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--tertiary-color-bg);
+  color: var(--primary-color-icon);
+
+  &.available {
+    background-color: var(--tertiary-color-bg);
+    color: var(--primary-color-icon);
+
+    &:hover:not(:disabled) {
+      background-color: var(--primary-color-bg);
+      color: var(--primary-color-text);
+      transform: translateY(-1px);
+    }
+  }
+
+  &.unavailable {
+    background-color: var(--tertiary-color-bg);
+    color: var(--primary-color-icon);
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.selected {
+    background-color: var(--primary-color-bg);
+    color: var(--primary-color-text);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .scheduleSelector {
+    padding: 16px;
+    gap: 24px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .month {
+    font-size: 16px;
+  }
+
+  .dateButton {
+    min-width: 70px;
+    height: 50px;
+  }
+
+  .todayLabel {
+    font-size: 12px;
+  }
+
+  .dayNumber {
+    font-size: 16px;
+  }
+
+  .dayOfWeek {
+    font-size: 10px;
+  }
+
+  .timeSlotsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
+  }
+
+  .timeSlot {
+    height: 40px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .scheduleSelector {
+    padding: 12px;
+    gap: 20px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .month {
+    font-size: 14px;
+  }
+
+  .datesContainer {
+    gap: 8px;
+  }
+
+  .dateButton {
+    min-width: 60px;
+    height: 45px;
+  }
+
+  .timeSlotsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

@@ -337,4 +337,13 @@ export class DoctorService {
       throw error;
     }
   }
+
+  async getDoctorWithClinic(id: string): Promise<Doctor> {
+    const doctor = await this.findOne(id);
+    const clinic = await this.clinicService.findOne(doctor.clinicId);
+    return {
+      ...doctor,
+      clinic,
+    };
+  }
 }

@@ -12,34 +12,46 @@
 
 /** День недели */
 export enum WeekDay {
-  ValueПонедельник = 'Понедельник',
-  ValueВторник = 'Вторник',
-  ValueСреда = 'Среда',
-  ValueЧетверг = 'Четверг',
-  ValueПятница = 'Пятница',
-  ValueСуббота = 'Суббота',
-  ValueВоскресенье = 'Воскресенье',
+  ValueПонедельник = "Понедельник",
+  ValueВторник = "Вторник",
+  ValueСреда = "Среда",
+  ValueЧетверг = "Четверг",
+  ValueПятница = "Пятница",
+  ValueСуббота = "Суббота",
+  ValueВоскресенье = "Воскресенье",
 }
 
 export interface UpdateUserRoleDto {
   /**
    * ID пользователя, для которого меняется роль
-   * @example 1
+   * @example "V1StGXR8_Z5jdHi6B-myT"
    */
-  userId: number;
+  userId: string;
   /**
    * Новая роль пользователя
    * @example "VET_CLINIC"
    */
-  newRole: 'USER' | 'VET_CLINIC' | 'SUPER_ADMIN';
+  newRole: "USER" | "VET_CLINIC" | "SUPER_ADMIN";
 }
 
 export interface User {
   /**
-   * Уникальный идентификатор пользователя
-   * @example 1
+   * Уникальный идентификатор
+   * @example "V1StGXR8_Z5jdHi6B-myT"
    */
-  id: number;
+  id: string;
+  /**
+   * Дата создания
+   * @format date-time
+   * @example "2023-12-01T10:00:00.000Z"
+   */
+  createdAt: string;
+  /**
+   * Дата последнего обновления
+   * @format date-time
+   * @example "2023-12-01T10:00:00.000Z"
+   */
+  updatedAt: string;
   /**
    * Номер телефона пользователя
    * @example "+79001234567"
@@ -64,31 +76,36 @@ export interface User {
    * Роль пользователя в системе
    * @example "USER"
    */
-  role: 'USER' | 'VET_CLINIC' | 'SUPER_ADMIN';
+  role: "USER" | "VET_CLINIC" | "SUPER_ADMIN";
   /** Список отзывов пользователя */
   reviews?: Review[];
+  /**
+   * ID ветклиники
+   * @example "V1StGXR8_Z5jdHi6B-myT"
+   */
+  clinic_id?: string;
   /** Связанная ветеринарная клиника */
   clinic?: VetClinic;
-  /**
-   * Дата создания пользователя
-   * @format date-time
-   * @example "2024-01-01T00:00:00.000Z"
-   */
-  createdAt: string;
-  /**
-   * Дата последнего обновления пользователя
-   * @format date-time
-   * @example "2024-01-01T00:00:00.000Z"
-   */
-  updatedAt: string;
 }
 
 export interface VetClinic {
   /**
-   * Уникальный идентификатор клиники
-   * @example 1
+   * Уникальный идентификатор
+   * @example "V1StGXR8_Z5jdHi6B-myT"
    */
-  id: number;
+  id: string;
+  /**
+   * Дата создания
+   * @format date-time
+   * @example "2023-12-01T10:00:00.000Z"
+   */
+  createdAt: string;
+  /**
+   * Дата последнего обновления
+   * @format date-time
+   * @example "2023-12-01T10:00:00.000Z"
+   */
+  updatedAt: string;
   /**
    * Адрес клиники
    * @example "ул. Тверская, д. 1, Москва"
@@ -109,6 +126,11 @@ export interface VetClinic {
    * @example "Современная ветеринарная клиника с полным спектром услуг"
    */
   description: string;
+  /**
+   * Телефон клиники
+   * @example "+79001234567"
+   */
+  phone: string;
   /** Список врачей в клинике */
   doctors?: Doctor[];
   /** Список пользователей клиники */
@@ -117,10 +139,22 @@ export interface VetClinic {
 
 export interface DoctorSchedule {
   /**
-   * Уникальный идентификатор записи
-   * @example 1
+   * Уникальный идентификатор
+   * @example "V1StGXR8_Z5jdHi6B-myT"
    */
-  id: number;
+  id: string;
+  /**
+   * Дата создания
+   * @format date-time
+   * @example "2023-12-01T10:00:00.000Z"
+   */
+  createdAt: string;
+  /**
+   * Дата последнего обновления
+   * @format date-time
+   * @example "2023-12-01T10:00:00.000Z"
+   */
+  updatedAt: string;
   /**
    * День недели
    * @example "Понедельник"
@@ -132,19 +166,36 @@ export interface DoctorSchedule {
    * @example true
    */
   isAvailable: boolean;
+  /**
+   * ID врача
+   * @example "V1StGXR8_Z5jdHi6B-myT"
+   */
+  doctor_id: string;
   /** Связанный врач */
   doctor: Doctor;
 }
 
 export interface Doctor {
   /**
-   * Уникальный идентификатор врача
-   * @example 1
+   * Уникальный идентификатор
+   * @example "V1StGXR8_Z5jdHi6B-myT"
    */
-  id: number;
+  id: string;
+  /**
+   * Дата создания
+   * @format date-time
+   * @example "2023-12-01T10:00:00.000Z"
+   */
+  createdAt: string;
+  /**
+   * Дата последнего обновления
+   * @format date-time
+   * @example "2023-12-01T10:00:00.000Z"
+   */
+  updatedAt: string;
   /**
    * Ключ фото врача в S3
-   * @example "avatars/doctors/1/uuid.jpeg"
+   * @example "avatars/doctors/V1StGXR8_Z5jdHi6B-myT/uuid.jpeg"
    */
   photoKey: string;
   /**
@@ -167,6 +218,11 @@ export interface Doctor {
    * @example ["Терапевт","Хирург","Дерматолог"]
    */
   specialization?: string[];
+  /**
+   * ID ветклиники
+   * @example "V1StGXR8_Z5jdHi6B-myT"
+   */
+  clinicId: string;
   /** Ветклиника, в которой работает врач */
   clinic: VetClinic;
   /** Список отзывов о враче */
@@ -182,10 +238,22 @@ export interface Doctor {
 
 export interface Review {
   /**
-   * Уникальный идентификатор отзыва
-   * @example 1
+   * Уникальный идентификатор
+   * @example "V1StGXR8_Z5jdHi6B-myT"
    */
-  id: number;
+  id: string;
+  /**
+   * Дата создания
+   * @format date-time
+   * @example "2023-12-01T10:00:00.000Z"
+   */
+  createdAt: string;
+  /**
+   * Дата последнего обновления
+   * @format date-time
+   * @example "2023-12-01T10:00:00.000Z"
+   */
+  updatedAt: string;
   /**
    * Заголовок отзыва
    * @example "Отличный врач!"
@@ -207,7 +275,17 @@ export interface Review {
    * Статус отзыва
    * @example "VERIFIED"
    */
-  status: 'PENDING' | 'VERIFIED';
+  status: "PENDING" | "VERIFIED";
+  /**
+   * ID врача
+   * @example "V1StGXR8_Z5jdHi6B-myT"
+   */
+  doctorId: string;
+  /**
+   * ID пользователя
+   * @example "V1StGXR8_Z5jdHi6B-myT"
+   */
+  userId: string;
   /** Врач, к которому относится отзыв */
   doctor: Doctor;
   /** Пользователь, оставивший отзыв */
@@ -215,13 +293,14 @@ export interface Review {
 }
 
 export interface SafeUserDto {
-  id: number;
+  /** @example "V1StGXR8_Z5jdHi6B-myT" */
+  id: string;
   /** @example "+79123456789" */
   phone: string;
   /** @example "Иван Иванов" */
   fullName: string;
   /** @example "USER" */
-  role: 'USER' | 'VET_CLINIC' | 'SUPER_ADMIN';
+  role: "USER" | "VET_CLINIC" | "SUPER_ADMIN";
   /** @default false */
   isVerified: boolean;
   reviews?: Review[];
@@ -288,7 +367,8 @@ export interface CreateReviewDto {
   title: string;
   description: string;
   rating: number;
-  doctorId: number;
+  /** @example "V1StGXR8_Z5jdHi6B-myT" */
+  doctorId: string;
 }
 
 export interface UpdateReviewStatusDto {
@@ -311,8 +391,11 @@ export interface CreateDoctorDto {
    * @example ["Терапевт","Хирург","Дерматолог"]
    */
   specialization?: string[];
-  /** ID ветклиники */
-  clinicId: number;
+  /**
+   * ID ветклиники
+   * @example "V1StGXR8_Z5jdHi6B-myT"
+   */
+  clinicId: string;
 }
 
 export interface UpdateDoctorDto {
@@ -327,8 +410,11 @@ export interface UpdateDoctorDto {
    * @example ["Cardiology","Surgery","Dermatology"]
    */
   specialization?: string[];
-  /** ID of the veterinary clinic */
-  clinicId?: number;
+  /**
+   * ID of the veterinary clinic
+   * @example "V1StGXR8_Z5jdHi6B-myT"
+   */
+  clinicId?: string;
 }
 
 export interface CreateVetClinicDto {

@@ -47,6 +47,7 @@
     "eslint-plugin-prettier": "^5.5.4",
     "jest": "30.0.5",
     "prettier": "^3.6.2",
+    "swagger-typescript-api": "^13.2.15",
     "typescript": "5"
   }
 }

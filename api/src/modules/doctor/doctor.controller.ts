@@ -224,7 +224,7 @@ export class DoctorController {
   async findOne(
     @Param() params: DoctorParamsDto,
   ): Promise<Doctor & { photoUrl: string | null }> {
-    const doctor = await this.doctorService.findOne(params.id);
+    const doctor = await this.doctorService.getDoctorWithClinic(params.id);
     const photoUrl = this.doctorService.getPhotoUrl(doctor.photoKey);
     return {
       ...doctor,
