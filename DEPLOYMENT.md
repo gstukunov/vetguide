@@ -39,6 +39,7 @@ GitHub Container Registry автоматически доступен для в�
 ### 1. Установка Docker
 
 ```bash
+
 # Ubuntu/Debian
 curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
