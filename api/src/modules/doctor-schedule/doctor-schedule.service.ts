@@ -13,6 +13,12 @@ import {
 } from './dto/doctor-schedule.dto';
 import { Doctor } from '../doctor/entities/doctor.entity';
 import { DoctorSchedule } from './entities/doctor-schedule.entity';
+import {
+  ScheduleData,
+  WeekSchedule,
+  DaySchedule,
+  TimeSlot,
+} from './types/schedule-types';
 
 @Injectable()
 export class DoctorScheduleService {
@@ -143,24 +149,7 @@ export class DoctorScheduleService {
   async getScheduleForUI(
     doctorId: string,
     weeks: number = 4,
-  ): Promise<{
-    weeks: Array<{
-      weekNumber: number;
-      days: Array<{
-        date: Date;
-        dayOfWeek: string;
-        dayOfWeekShort: string;
-        dayNumber: number;
-        isToday: boolean;
-        timeSlots: Array<{
-          id: string;
-          time: string;
-          available: boolean;
-        }>;
-      }>;
-    }>;
-    currentWeekIndex: number;
-  }> {
+  ): Promise<ScheduleData> {
     const startDate = new Date();
     const endDate = new Date();
     endDate.setDate(startDate.getDate() + weeks * 7);
@@ -180,7 +169,7 @@ export class DoctorScheduleService {
     });
 
     // Generate weeks structure
-    const weeksData = [];
+    const weeksData: Array<WeekSchedule> = [];
     let currentWeekIndex = 0;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -195,7 +184,7 @@ export class DoctorScheduleService {
           (7 * 24 * 60 * 60 * 1000),
       );
 
-      const days = [];
+      const days: Array<DaySchedule> = [];
 
       for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
         const date = new Date(weekStart);
