@@ -18,10 +18,15 @@ const AppDataSource = new DataSource({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
   entities: [User, VerificationCode, VetClinic, DoctorSchedule, Doctor, Review],
-  migrations: ['src/migrations/*.ts'],
+  migrations: [
+    // В продакшене используем скомпилированные .js файлы
+    process.env.NODE_ENV === 'production'
+      ? 'dist/migrations/*.js'
+      : 'src/migrations/*.ts',
+  ],
   migrationsTableName: 'migrations',
   synchronize: false,
-  logging: true,
+  logging: process.env.NODE_ENV !== 'production',
 });
 
 export default AppDataSource;

@@ -34,23 +34,33 @@ import { DoctorSchedule } from './modules/doctor-schedule/entities/doctor-schedu
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        host: config.get('DB_HOST'),
-        port: config.get('DB_PORT'),
-        username: config.get('DB_USERNAME'),
-        password: config.get('DB_PASSWORD'),
-        database: config.get('DB_DATABASE'),
-        entities: [
-          User,
-          VerificationCode,
-          VetClinic,
-          DoctorSchedule,
-          Doctor,
-          Review,
-        ],
-        synchronize: true,
-      }),
+      useFactory: (config: ConfigService) => {
+        const isProduction = config.get('NODE_ENV') === 'production';
+        return {
+          type: 'postgres',
+          host: config.get('DB_HOST'),
+          port: config.get('DB_PORT'),
+          username: config.get('DB_USERNAME'),
+          password: config.get('DB_PASSWORD'),
+          database: config.get('DB_DATABASE'),
+          entities: [
+            User,
+            VerificationCode,
+            VetClinic,
+            DoctorSchedule,
+            Doctor,
+            Review,
+          ],
+          // В продакшене используем миграции, в разработке - synchronize
+          synchronize: !isProduction,
+          migrationsRun: isProduction, // Автоматически запускать миграции в продакшене
+          migrations: isProduction
+            ? ['dist/migrations/*.js']
+            : ['src/migrations/*.ts'],
+          migrationsTableName: 'migrations',
+          logging: !isProduction,
+        };
+      },
     }),
     AdminModule,
     UserModule,
