@@ -61,7 +61,12 @@ export class VerificationService {
 
     if (!record) {
       // Сохраняем неудачную попытку
-      await this.codeRepo.save({ phone, code, isVerified: false });
+      const failedAttempt = this.codeRepo.create({
+        phone,
+        code,
+        isVerified: false,
+      });
+      await this.codeRepo.save(failedAttempt);
       return false;
     }
 
@@ -94,7 +99,8 @@ export class VerificationService {
       );
     }
     const code = crypto.randomInt(100000, 999999).toString();
-    await this.codeRepo.save({ phone, code });
+    const verificationCode = this.codeRepo.create({ phone, code });
+    await this.codeRepo.save(verificationCode);
 
     const message = `Одноразовый код для подтверждения номера телефона: ${code}`;
 

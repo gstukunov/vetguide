@@ -73,13 +73,14 @@ export class UserService {
 
     // Создаем пользователя
     const hashedPassword = await hash(password, 10);
-    const newUser = await this.userRepo.save({
+    const newUser = this.userRepo.create({
       phone,
       fullName,
       password: hashedPassword,
       role,
       isVerified: true, // Телефон уже подтвержден
     });
+    await this.userRepo.save(newUser);
 
     const { password: _, ...safeUser } = newUser;
 
