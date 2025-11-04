@@ -35,7 +35,6 @@ import { DoctorSchedule } from './modules/doctor-schedule/entities/doctor-schedu
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        const isProduction = config.get('NODE_ENV') === 'production';
         return {
           type: 'postgres',
           host: config.get('DB_HOST'),
@@ -51,14 +50,11 @@ import { DoctorSchedule } from './modules/doctor-schedule/entities/doctor-schedu
             Doctor,
             Review,
           ],
-          // В продакшене используем миграции, в разработке - synchronize
-          synchronize: !isProduction,
-          migrationsRun: isProduction, // Автоматически запускать миграции в продакшене
-          migrations: isProduction
-            ? ['dist/migrations/*.js']
-            : ['src/migrations/*.ts'],
+          logging: true,
+          synchronize: false,
+          migrationsRun: true, // Автоматически запускать миграции
+          migrations: ['dist/migrations/*.js'],
           migrationsTableName: 'migrations',
-          logging: !isProduction,
         };
       },
     }),

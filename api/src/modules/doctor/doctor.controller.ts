@@ -40,6 +40,7 @@ export class DoctorController {
   constructor(private readonly doctorService: DoctorService) {}
 
   @Post()
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPER_ADMIN)
   @ApiBearerAuth('access-token')
@@ -134,9 +135,10 @@ export class DoctorController {
   }
 
   @Put(':id')
-  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPER_ADMIN)
+  @ApiBearerAuth('access-token')
   @ApiOperation({
     summary: 'Обновить информацию о враче',
     description:

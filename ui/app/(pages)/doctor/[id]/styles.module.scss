@@ -121,6 +121,12 @@
       align-items: center;
       gap: 14px;
 
+      .doctorSpecializationContainer {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
       @media (max-width: 1024px) {
         gap: 12px;
       }
@@ -154,6 +160,7 @@
         font-weight: 400;
         color: var(--primary-color-text);
         padding: 8px 16px;
+        text-align: center;
         background-color: var(--tertiary-color-bg);
         border-radius: 4px;
 
