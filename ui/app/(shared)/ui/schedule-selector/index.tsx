@@ -14,12 +14,18 @@ export const ScheduleSelector: React.FC<ScheduleSelectorProps> = ({
   title = 'Доступные даты',
   monthName,
 }) => {
-  const currentWeek = weeks[currentWeekIndex];
+  const currentWeek =
+    weeks &&
+    weeks.length > 0 &&
+    currentWeekIndex >= 0 &&
+    currentWeekIndex < weeks.length
+      ? weeks[currentWeekIndex]
+      : undefined;
   const currentMonth =
     monthName ||
     currentWeek?.days[0]?.date.toLocaleDateString('ru-RU', { month: 'long' });
 
-  if (!currentWeek) {
+  if (!currentWeek || !currentWeek.days || currentWeek.days.length === 0) {
     return <div>Загрузка расписания...</div>;
   }
 
@@ -55,12 +61,30 @@ export const ScheduleSelector: React.FC<ScheduleSelectorProps> = ({
           &lt;
         </button>
 
-        <div className={styles.datesContainer}>
-          {currentWeek.days.map(day => {
-            const hasAvailableSlots = day.timeSlots.some(
-              slot => slot.available
-            );
+        <div
+          className={styles.datesContainer}
+          data-testid="dates-container"
+          style={{
+            minHeight: '60px', // Ensure container has minimum height
+          }}
+        >
+          {currentWeek.days.length === 0 && <div>No days available</div>}
+          {currentWeek.days.map((day, index) => {
+            const hasAvailableSlots =
+              day.timeSlots?.some(slot => slot.available) ?? false;
             const isDisabled = !hasAvailableSlots;
+
+            // Debug first day
+            if (index === 0) {
+              console.log('🔍 Rendering first day:', {
+                date: day.date,
+                dayNumber: day.dayNumber,
+                dayOfWeekShort: day.dayOfWeekShort,
+                timeSlotsCount: day.timeSlots?.length ?? 0,
+                hasAvailableSlots,
+                isDisabled,
+              });
+            }
 
             return (
               <button
@@ -71,22 +95,27 @@ export const ScheduleSelector: React.FC<ScheduleSelectorProps> = ({
                     ? styles.selected
                     : ''
                 }`}
-                onClick={() => !isDisabled && handleDateClick(day.date)}
+                onClick={() => {
+                  if (!isDisabled) {
+                    handleDateClick(day.date);
+                  }
+                }}
                 disabled={isDisabled}
+                aria-disabled={isDisabled}
               >
                 <div className={styles.dateContent}>
                   {day.isToday ? (
                     <>
                       <div className={styles.todayLabel}>Сегодня</div>
                       <div className={styles.dayOfWeek}>
-                        {day.dayOfWeekShort}
+                        {day.dayOfWeekShort || '—'}
                       </div>
                     </>
                   ) : (
                     <>
                       <div className={styles.dayNumber}>{day.dayNumber}</div>
                       <div className={styles.dayOfWeek}>
-                        {day.dayOfWeekShort}
+                        {day.dayOfWeekShort || '—'}
                       </div>
                     </>
                   )}
@@ -117,10 +146,17 @@ export const ScheduleSelector: React.FC<ScheduleSelectorProps> = ({
             <button
               key={slot.id}
               className={`${styles.timeSlot} ${slot.available ? styles.available : styles.unavailable} ${
-                selectedTimeSlot === slot.time ? styles.selected : ''
-              }`}
+                slot.bookedByCurrentUser ? styles.bookedByUser : ''
+              } ${selectedTimeSlot === slot.time ? styles.selected : ''}`}
               onClick={() => slot.available && handleTimeSlotClick(slot.time)}
               disabled={!slot.available}
+              title={
+                slot.bookedByCurrentUser
+                  ? 'Забронировано вами'
+                  : !slot.available
+                    ? 'Недоступно'
+                    : ''
+              }
             >
               {slot.time}
             </button>

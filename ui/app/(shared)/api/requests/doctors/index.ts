@@ -23,3 +23,5 @@ export const getDoctorRequest = async (id: string) => {
     url: DOCTORS_API_ROUTES.getDoctor(id),
   });
 };
+
+// Removed getDoctorScheduleRequest - schedule is now generated client-side from doctor appointments

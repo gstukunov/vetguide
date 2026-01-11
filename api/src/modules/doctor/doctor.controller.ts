@@ -23,6 +23,8 @@ import {
   ApiConsumes,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
+import { User } from '../../common/decorators/user.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '../user/types/role.enum';
@@ -40,10 +42,9 @@ export class DoctorController {
   constructor(private readonly doctorService: DoctorService) {}
 
   @Post()
-  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPER_ADMIN)
-  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('JWT-auth')
   @ApiBody({ type: CreateDoctorDto })
   @ApiResponse({
     status: 200,
@@ -135,10 +136,9 @@ export class DoctorController {
   }
 
   @Put(':id')
-  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPER_ADMIN)
-  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Обновить информацию о враче',
     description:
@@ -202,18 +202,62 @@ export class DoctorController {
   }
 
   @Get(':id')
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({
     summary: 'Получить информацию о враче',
-    description: 'Получение полной информации о враче',
+    description:
+      'Получение полной информации о враче. Если пользователь авторизован, временные слоты, забронированные им, будут помечены флагом bookedByCurrentUser (публичный доступ, авторизация опциональна)',
   })
   @ApiParam({
     name: 'id',
     description: 'ID врача',
     type: String,
   })
+  @ApiBearerAuth('JWT-auth')
   @ApiResponse({
     status: 200,
-    description: 'Информация о враче',
+    description: 'Информация о враче, включая забронированные временные слоты',
+    schema: {
+      allOf: [
+        { $ref: '#/components/schemas/Doctor' },
+        {
+          type: 'object',
+          properties: {
+            photoUrl: {
+              type: 'string',
+              nullable: true,
+              description: 'URL фото врача',
+            },
+            bookedTimeslots: {
+              type: 'array',
+              description: 'Массив забронированных временных слотов',
+              items: {
+                type: 'object',
+                properties: {
+                  date: {
+                    type: 'string',
+                    format: 'date',
+                    example: '2024-01-15',
+                    description: 'Дата записи',
+                  },
+                  timeSlot: {
+                    type: 'string',
+                    example: '09:00',
+                    description: 'Временной слот (формат HH:mm)',
+                  },
+                  bookedByCurrentUser: {
+                    type: 'boolean',
+                    description:
+                      'Флаг, указывающий, что слот забронирован текущим пользователем (только если пользователь авторизован)',
+                    example: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      ],
+    },
   })
   @ApiResponse({
     status: 400,
@@ -225,12 +269,27 @@ export class DoctorController {
   })
   async findOne(
     @Param() params: DoctorParamsDto,
-  ): Promise<Doctor & { photoUrl: string | null }> {
+    @User('userId') currentUserId?: string,
+  ): Promise<
+    Doctor & {
+      photoUrl: string | null;
+      bookedTimeslots: Array<{
+        date: string;
+        timeSlot: string;
+        bookedByCurrentUser?: boolean;
+      }>;
+    }
+  > {
     const doctor = await this.doctorService.getDoctorWithClinic(params.id);
     const photoUrl = this.doctorService.getPhotoUrl(doctor.photoKey);
+    const bookedTimeslots = await this.doctorService.getBookedTimeslots(
+      params.id,
+      currentUserId,
+    );
     return {
       ...doctor,
       photoUrl,
+      bookedTimeslots,
     };
   }
 
@@ -270,33 +329,37 @@ export class DoctorController {
   }
 
   @Get(':id/schedule')
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({
-    summary: 'Получить врача с расписанием',
-    description: 'Полная информация о враче вместе с его расписанием',
+    summary: 'Получить расписание врача для UI',
+    description:
+      'Получение расписания в формате, оптимизированном для UI компонента. Если пользователь авторизован, слоты, забронированные им, будут помечены флагом bookedByCurrentUser (публичный доступ, авторизация опциональна)',
   })
   @ApiParam({
     name: 'id',
     description: 'ID врача',
     type: String,
   })
+  @ApiQuery({
+    name: 'weeks',
+    description: 'Количество недель для получения (по умолчанию 4)',
+    required: false,
+    type: Number,
+  })
+  @ApiBearerAuth('JWT-auth')
   @ApiResponse({
     status: 200,
-    description: 'Информация о враче и его расписании',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Некорректный ID врача',
+    description: 'Расписание в формате для UI',
   })
   @ApiResponse({
     status: 404,
     description: 'Врач не найден',
   })
-  async getDoctorSchedule(@Param() params: DoctorParamsDto) {
-    const doctor = await this.doctorService.getDoctorWithSchedule(params.id);
-    const photoUrl = this.doctorService.getPhotoUrl(doctor.photoKey);
-    return {
-      ...doctor,
-      photoUrl,
-    };
+  async getScheduleForUI(
+    @Param() params: DoctorParamsDto,
+    @Query('weeks') weeks?: number,
+    @User('userId') currentUserId?: string,
+  ) {
+    return this.doctorService.getScheduleForUI(params.id, weeks, currentUserId);
   }
 }

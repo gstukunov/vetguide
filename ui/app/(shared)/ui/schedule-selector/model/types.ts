@@ -2,6 +2,7 @@ export type TimeSlot = {
   id: string;
   time: string;
   available: boolean;
+  bookedByCurrentUser?: boolean;
 };
 
 export type DaySchedule = {

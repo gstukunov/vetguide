@@ -15,8 +15,8 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 
 @ApiTags('Админ')
-@ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
+@ApiBearerAuth('JWT-auth')
 @Controller('admin')
 export class AdminController {
   constructor(private readonly userService: UserService) {}

@@ -23,7 +23,7 @@ import {
 } from './dto/create-user.dto';
 import { SafeUserDto } from './dto/safe-user.dto';
 import { AccessDto } from '../../common/dto/access.dto';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { User } from '../../common/decorators/user.decorator';
 import { IpThrottlerGuard } from '../../common/guards/ip-throttler.guard';
 import { RequestPhoneChangeDto } from './dto/request-phone-change.dto';
@@ -39,8 +39,8 @@ export class UserController {
    * Информация о пользователе
    */
   @Get('me')
-  @ApiBearerAuth('access-token')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Информация о пользователе',

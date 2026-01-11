@@ -10,17 +10,6 @@
  * ---------------------------------------------------------------
  */
 
-/** День недели */
-export enum WeekDay {
-  ValueПонедельник = "Понедельник",
-  ValueВторник = "Вторник",
-  ValueСреда = "Среда",
-  ValueЧетверг = "Четверг",
-  ValueПятница = "Пятница",
-  ValueСуббота = "Суббота",
-  ValueВоскресенье = "Воскресенье",
-}
-
 export interface UpdateUserRoleDto {
   /**
    * ID пользователя, для которого меняется роль
@@ -31,7 +20,7 @@ export interface UpdateUserRoleDto {
    * Новая роль пользователя
    * @example "VET_CLINIC"
    */
-  newRole: "USER" | "VET_CLINIC" | "SUPER_ADMIN";
+  newRole: 'USER' | 'VET_CLINIC' | 'SUPER_ADMIN';
 }
 
 export interface User {
@@ -76,7 +65,7 @@ export interface User {
    * Роль пользователя в системе
    * @example "USER"
    */
-  role: "USER" | "VET_CLINIC" | "SUPER_ADMIN";
+  role: 'USER' | 'VET_CLINIC' | 'SUPER_ADMIN';
   /** Список отзывов пользователя */
   reviews?: Review[];
   /**
@@ -137,44 +126,6 @@ export interface VetClinic {
   users?: User[];
 }
 
-export interface DoctorSchedule {
-  /**
-   * Уникальный идентификатор
-   * @example "V1StGXR8_Z5jdHi6B-myT"
-   */
-  id: string;
-  /**
-   * Дата создания
-   * @format date-time
-   * @example "2023-12-01T10:00:00.000Z"
-   */
-  createdAt: string;
-  /**
-   * Дата последнего обновления
-   * @format date-time
-   * @example "2023-12-01T10:00:00.000Z"
-   */
-  updatedAt: string;
-  /**
-   * День недели
-   * @example "Понедельник"
-   */
-  dayOfWeek: WeekDay;
-  /**
-   * Доступен ли врач в этот день
-   * @default true
-   * @example true
-   */
-  isAvailable: boolean;
-  /**
-   * ID врача
-   * @example "V1StGXR8_Z5jdHi6B-myT"
-   */
-  doctor_id: string;
-  /** Связанный врач */
-  doctor: Doctor;
-}
-
 export interface Doctor {
   /**
    * Уникальный идентификатор
@@ -227,13 +178,24 @@ export interface Doctor {
   clinic: VetClinic;
   /** Список отзывов о враче */
   reviews?: Review[];
-  /** Расписание работы врача */
-  schedules?: DoctorSchedule[];
   /**
    * Средний рейтинг врача (вычисляемое поле)
    * @example 4.5
    */
   averageRating?: number;
+  /**
+   * Записи врача (appointments)
+   */
+  appointments?: Appointment[];
+  /**
+   * Забронированные временные слоты врача
+   * @example [{"date": "2026-01-15", "timeSlot": "10:00", "bookedByCurrentUser": true}]
+   */
+  bookedTimeslots?: Array<{
+    date: string;
+    timeSlot: string;
+    bookedByCurrentUser?: boolean;
+  }>;
 }
 
 export interface Review {
@@ -275,7 +237,7 @@ export interface Review {
    * Статус отзыва
    * @example "VERIFIED"
    */
-  status: "PENDING" | "VERIFIED";
+  status: 'PENDING' | 'VERIFIED';
   /**
    * ID врача
    * @example "V1StGXR8_Z5jdHi6B-myT"
@@ -300,7 +262,7 @@ export interface SafeUserDto {
   /** @example "Иван Иванов" */
   fullName: string;
   /** @example "USER" */
-  role: "USER" | "VET_CLINIC" | "SUPER_ADMIN";
+  role: 'USER' | 'VET_CLINIC' | 'SUPER_ADMIN';
   /** @default false */
   isVerified: boolean;
   reviews?: Review[];
@@ -457,25 +419,72 @@ export interface RefreshDto {
   refreshToken: string;
 }
 
-export interface CreateDoctorScheduleDto {
+export interface CreateAppointmentDto {
   /**
-   * День недели
-   * @example "Понедельник"
+   * ID врача
+   * @example "V1StGXR8_Z5jdHi6B-myT"
    */
-  dayOfWeek: WeekDay;
+  doctorId: string;
   /**
-   * Доступен ли врач в этот день
-   * @example true
+   * Дата записи (YYYY-MM-DD)
+   * @example "2024-01-15"
    */
-  isAvailable: boolean;
+  date: string;
+  /**
+   * Временной слот (формат HH:mm)
+   * @example "09:00"
+   */
+  timeSlot: string;
 }
 
-export interface UpdateDoctorScheduleDto {
+export interface Appointment {
   /**
-   * Статус доступности врача
-   * @example false
+   * Уникальный идентификатор
+   * @example "V1StGXR8_Z5jdHi6B-myT"
    */
-  isAvailable: boolean;
+  id: string;
+  /**
+   * Дата создания
+   * @format date-time
+   * @example "2023-12-01T10:00:00.000Z"
+   */
+  createdAt: string;
+  /**
+   * Дата последнего обновления
+   * @format date-time
+   * @example "2023-12-01T10:00:00.000Z"
+   */
+  updatedAt: string;
+  /**
+   * ID пользователя, создавшего запись
+   * @example "V1StGXR8_Z5jdHi6B-myT"
+   */
+  user_id: string;
+  /** Пользователь, создавший запись */
+  user: User;
+  /**
+   * ID врача
+   * @example "V1StGXR8_Z5jdHi6B-myT"
+   */
+  doctorId: string;
+  /** Врач, на которого записан пользователь */
+  doctor: Doctor;
+  /**
+   * Дата записи
+   * @example "2024-01-15"
+   */
+  date: string;
+  /**
+   * Временной слот (формат HH:mm)
+   * @example "09:00"
+   */
+  timeSlot: string;
+  /**
+   * Статус записи
+   * @default "CONFIRMED"
+   * @example "CONFIRMED"
+   */
+  status: 'CONFIRMED' | 'CANCELLED';
 }
 
 export interface UnifiedSearchResultDto {

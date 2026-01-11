@@ -43,20 +43,28 @@ export const useScheduleData = (initialWeeks: WeekSchedule[] = []) => {
   }, []);
 
   const updateWeeks = useCallback(
-    (updatedWeeks: WeekSchedule[]) => {
+    (updatedWeeks: WeekSchedule[], weekIndex?: number) => {
       setWeeks(updatedWeeks);
 
+      // Use provided weekIndex or fall back to currentWeekIndex
+      const targetWeekIndex = weekIndex ?? currentWeekIndex;
       // Auto-select today or first available day
-      if (updatedWeeks.length > 0) {
-        const currentWeek = updatedWeeks[currentWeekIndex];
+      if (
+        updatedWeeks.length > 0 &&
+        targetWeekIndex >= 0 &&
+        targetWeekIndex < updatedWeeks.length
+      ) {
+        const currentWeek = updatedWeeks[targetWeekIndex];
         if (currentWeek && currentWeek.days.length > 0) {
           const today = new Date();
           today.setHours(0, 0, 0, 0);
 
           // Try to find today first
-          const todayDay = currentWeek.days.find(
-            day => day.date.getTime() === today.getTime()
-          );
+          const todayDay = currentWeek.days.find(day => {
+            const dayDate = new Date(day.date);
+            dayDate.setHours(0, 0, 0, 0);
+            return dayDate.getTime() === today.getTime();
+          });
 
           if (todayDay) {
             setSelectedDate(todayDay.date);

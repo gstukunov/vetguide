@@ -3,7 +3,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { VetClinic } from '../../vet-clinic/entities/vet-clinic.entity';
 import { Review } from '../../review/entities/review.entity';
-import { DoctorSchedule } from '../../doctor-schedule/entities/doctor-schedule.entity';
 import { BaseEntity } from '../../../common/entities/base.entity';
 
 @Entity()
@@ -72,16 +71,6 @@ export class Doctor extends BaseEntity {
   })
   @OneToMany(() => Review, (review) => review.doctor)
   reviews: Review[];
-
-  @ApiProperty({
-    description: 'Расписание работы врача',
-    type: () => [DoctorSchedule],
-    required: false,
-  })
-  @OneToMany(() => DoctorSchedule, (schedule) => schedule.doctor, {
-    cascade: true,
-  })
-  schedules: DoctorSchedule[];
 
   @ApiProperty({
     description: 'Средний рейтинг врача (вычисляемое поле)',

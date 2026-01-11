@@ -3,9 +3,9 @@ import * as dotenv from 'dotenv';
 import { User } from '../modules/user/entities/user.entity';
 import { VerificationCode } from '../modules/verification/entity/verification.entity';
 import { VetClinic } from '../modules/vet-clinic/entities/vet-clinic.entity';
-import { DoctorSchedule } from '../modules/doctor-schedule/entities/doctor-schedule.entity';
 import { Doctor } from '../modules/doctor/entities/doctor.entity';
 import { Review } from '../modules/review/entities/review.entity';
+import { Appointment } from '../modules/appointment/entities/appointment.entity';
 
 // Загружаем переменные окружения из .env файла
 dotenv.config();
@@ -17,9 +17,10 @@ const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  entities: [User, VerificationCode, VetClinic, DoctorSchedule, Doctor, Review],
+  entities: [User, VerificationCode, VetClinic, Doctor, Review, Appointment],
   migrations: [
     // В продакшене используем скомпилированные .js файлы
+    // По умолчанию используем .ts файлы для разработки
     process.env.NODE_ENV === 'production'
       ? 'dist/migrations/*.js'
       : 'src/migrations/*.ts',

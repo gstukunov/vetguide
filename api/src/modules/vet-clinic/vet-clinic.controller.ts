@@ -30,10 +30,9 @@ export class VetClinicController {
   constructor(private readonly vetClinicService: VetClinicService) {}
 
   @Post()
-  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPER_ADMIN)
-  @ApiBearerAuth('access-token')
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Создать новую ветеринарную клинику',
     description:

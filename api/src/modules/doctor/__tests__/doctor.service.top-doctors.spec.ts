@@ -3,8 +3,8 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DoctorService } from '../doctor.service';
 import { Doctor } from '../entities/doctor.entity';
+import { Appointment } from '../../appointment/entities/appointment.entity';
 import { VetClinicService } from '../../vet-clinic/vet-clinic.service';
-import { DoctorScheduleService } from '../../doctor-schedule/doctor-schedule.service';
 import { S3Service } from '../../s3/s3.service';
 import { ConfigService } from '@nestjs/config';
 import { ReviewStatus } from '../../review/entities/review.entity';
@@ -19,10 +19,6 @@ describe('DoctorService - Top Doctors', () => {
 
   const mockVetClinicService = {
     findOne: jest.fn(),
-  };
-
-  const mockDoctorScheduleService = {
-    createSchedule: jest.fn(),
   };
 
   const mockS3Service = {
@@ -50,12 +46,14 @@ describe('DoctorService - Top Doctors', () => {
           useValue: mockDoctorRepository,
         },
         {
-          provide: VetClinicService,
-          useValue: mockVetClinicService,
+          provide: getRepositoryToken(Appointment),
+          useValue: {
+            find: jest.fn(),
+          },
         },
         {
-          provide: DoctorScheduleService,
-          useValue: mockDoctorScheduleService,
+          provide: VetClinicService,
+          useValue: mockVetClinicService,
         },
         {
           provide: S3Service,

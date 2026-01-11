@@ -3,10 +3,10 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DoctorService } from '../doctor.service';
 import { Doctor } from '../entities/doctor.entity';
+import { Appointment } from '../../appointment/entities/appointment.entity';
 import { CreateDoctorDto } from '../dto/create-doctor.dto';
 import { UpdateDoctorDto } from '../dto/update-doctor.dto';
 import { VetClinicService } from '../../vet-clinic/vet-clinic.service';
-import { DoctorScheduleService } from '../../doctor-schedule/doctor-schedule.service';
 import { S3Service } from '../../s3/s3.service';
 import { ConfigService } from '@nestjs/config';
 import { UserRole } from '../../user/types/role.enum';
@@ -15,7 +15,6 @@ describe('DoctorService', () => {
   let service: DoctorService;
   let doctorRepo: Repository<Doctor>;
   let clinicService: VetClinicService;
-  let scheduleService: DoctorScheduleService;
   let s3Service: S3Service;
   let configService: ConfigService;
 
@@ -42,7 +41,6 @@ describe('DoctorService', () => {
     specialization: ['Кардиология', 'Хирургия'],
     clinic: mockVetClinic,
     reviews: [],
-    schedules: [],
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -73,15 +71,15 @@ describe('DoctorService', () => {
           },
         },
         {
-          provide: VetClinicService,
+          provide: getRepositoryToken(Appointment),
           useValue: {
-            findOne: jest.fn(),
+            find: jest.fn(),
           },
         },
         {
-          provide: DoctorScheduleService,
+          provide: VetClinicService,
           useValue: {
-            createSchedule: jest.fn(),
+            findOne: jest.fn(),
           },
         },
         {
@@ -110,7 +108,6 @@ describe('DoctorService', () => {
     service = module.get<DoctorService>(DoctorService);
     doctorRepo = module.get<Repository<Doctor>>(getRepositoryToken(Doctor));
     clinicService = module.get<VetClinicService>(VetClinicService);
-    scheduleService = module.get<DoctorScheduleService>(DoctorScheduleService);
     s3Service = module.get<S3Service>(S3Service);
     configService = module.get<ConfigService>(ConfigService);
   });

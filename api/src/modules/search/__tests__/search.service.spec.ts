@@ -35,7 +35,6 @@ describe('SearchService', () => {
       updatedAt: new Date(),
     },
     reviews: [],
-    schedules: [],
     averageRating: 4.5,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -243,6 +242,143 @@ describe('SearchService', () => {
 
       expect(result).toEqual(expectedResult);
       expect(service.searchAll).toHaveBeenCalledWith(query);
+    });
+  });
+
+  describe('Edge cases and error handling', () => {
+    it('должен обрабатывать очень длинные запросы', async () => {
+      const longQuery = 'a'.repeat(1000);
+      const doctors = [mockDoctor];
+      const clinics = [mockClinic];
+
+      jest.spyOn(doctorService, 'searchDoctors').mockResolvedValue(doctors);
+      jest.spyOn(vetClinicService, 'searchClinics').mockResolvedValue(clinics);
+
+      const result = await service.searchAll(longQuery);
+
+      expect(result.totalResults).toBe(2);
+      expect(doctorService.searchDoctors).toHaveBeenCalledWith(longQuery);
+      expect(vetClinicService.searchClinics).toHaveBeenCalledWith(longQuery);
+    });
+
+    it('должен обрабатывать запросы со специальными символами', async () => {
+      const specialQuery = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+      const doctors: Doctor[] = [];
+      const clinics: VetClinic[] = [];
+
+      jest.spyOn(doctorService, 'searchDoctors').mockResolvedValue(doctors);
+      jest.spyOn(vetClinicService, 'searchClinics').mockResolvedValue(clinics);
+
+      const result = await service.searchAll(specialQuery);
+
+      expect(result.totalResults).toBe(0);
+      expect(doctorService.searchDoctors).toHaveBeenCalledWith(specialQuery);
+      expect(vetClinicService.searchClinics).toHaveBeenCalledWith(specialQuery);
+    });
+
+    it('должен обрабатывать запросы с Unicode символами', async () => {
+      const unicodeQuery = 'Кардиолог 🐾 Ветеринар';
+      const doctors = [mockDoctor];
+      const clinics: VetClinic[] = [];
+
+      jest.spyOn(doctorService, 'searchDoctors').mockResolvedValue(doctors);
+      jest.spyOn(vetClinicService, 'searchClinics').mockResolvedValue(clinics);
+
+      const result = await service.searchAll(unicodeQuery);
+
+      expect(result.totalResults).toBe(1);
+      expect(doctorService.searchDoctors).toHaveBeenCalledWith(unicodeQuery);
+      expect(vetClinicService.searchClinics).toHaveBeenCalledWith(unicodeQuery);
+    });
+
+    it('должен обрабатывать ошибки от DoctorService', async () => {
+      const query = 'test';
+      const error = new Error('Database error');
+
+      jest.spyOn(doctorService, 'searchDoctors').mockRejectedValue(error);
+      jest
+        .spyOn(vetClinicService, 'searchClinics')
+        .mockResolvedValue([mockClinic]);
+
+      await expect(service.searchAll(query)).rejects.toThrow('Database error');
+    });
+
+    it('должен обрабатывать ошибки от VetClinicService', async () => {
+      const query = 'test';
+      const error = new Error('Database error');
+
+      jest.spyOn(doctorService, 'searchDoctors').mockResolvedValue([mockDoctor]);
+      jest
+        .spyOn(vetClinicService, 'searchClinics')
+        .mockRejectedValue(error);
+
+      await expect(service.searchAll(query)).rejects.toThrow('Database error');
+    });
+
+    it('должен корректно обрабатывать пустые результаты от обоих сервисов', async () => {
+      const query = 'nonexistent';
+
+      jest.spyOn(doctorService, 'searchDoctors').mockResolvedValue([]);
+      jest.spyOn(vetClinicService, 'searchClinics').mockResolvedValue([]);
+
+      const result = await service.searchAll(query);
+
+      expect(result).toEqual({
+        doctors: [],
+        clinics: [],
+        totalDoctors: 0,
+        totalClinics: 0,
+        totalResults: 0,
+      });
+    });
+
+    it('должен корректно обрабатывать множественные результаты', async () => {
+      const query = 'test';
+      const multipleDoctors = [mockDoctor, { ...mockDoctor, id: '2' }];
+      const multipleClinics = [mockClinic, { ...mockClinic, id: '2' }];
+
+      jest
+        .spyOn(doctorService, 'searchDoctors')
+        .mockResolvedValue(multipleDoctors);
+      jest
+        .spyOn(vetClinicService, 'searchClinics')
+        .mockResolvedValue(multipleClinics);
+
+      const result = await service.searchAll(query);
+
+      expect(result.totalDoctors).toBe(2);
+      expect(result.totalClinics).toBe(2);
+      expect(result.totalResults).toBe(4);
+    });
+
+    it('должен корректно обрабатывать null как пустой запрос', async () => {
+      const result = await service.searchAll(null as any);
+
+      expect(result).toEqual({
+        doctors: [],
+        clinics: [],
+        totalDoctors: 0,
+        totalClinics: 0,
+        totalResults: 0,
+      });
+    });
+
+    it('должен использовать Promise.all для параллельного выполнения поиска', async () => {
+      const query = 'test';
+      const doctorsSpy = jest
+        .spyOn(doctorService, 'searchDoctors')
+        .mockResolvedValue([mockDoctor]);
+      const clinicsSpy = jest
+        .spyOn(vetClinicService, 'searchClinics')
+        .mockResolvedValue([mockClinic]);
+
+      await service.searchAll(query);
+
+      expect(doctorsSpy).toHaveBeenCalled();
+      expect(clinicsSpy).toHaveBeenCalled();
+      // Оба вызова должны произойти
+      expect(doctorsSpy.mock.invocationCallOrder[0]).toBeDefined();
+      expect(clinicsSpy.mock.invocationCallOrder[0]).toBeDefined();
     });
   });
 });

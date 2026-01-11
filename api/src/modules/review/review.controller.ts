@@ -17,8 +17,8 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewStatusDto } from './dto/update-review.status.dto';
 
 @ApiTags('Отзывы')
-@ApiBearerAuth()
 @Controller('reviews')
+@ApiBearerAuth('JWT-auth')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 

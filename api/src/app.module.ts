@@ -17,8 +17,8 @@ import { S3Module } from './modules/s3/s3.module';
 import { Review } from './modules/review/entities/review.entity';
 import { VetClinic } from './modules/vet-clinic/entities/vet-clinic.entity';
 import { Doctor } from './modules/doctor/entities/doctor.entity';
-import { DoctorScheduleModule } from './modules/doctor-schedule/doctor-schedule.module';
-import { DoctorSchedule } from './modules/doctor-schedule/entities/doctor-schedule.entity';
+import { AppointmentModule } from './modules/appointment/appointment.module';
+import { Appointment } from './modules/appointment/entities/appointment.entity';
 
 @Module({
   imports: [
@@ -46,9 +46,9 @@ import { DoctorSchedule } from './modules/doctor-schedule/entities/doctor-schedu
             User,
             VerificationCode,
             VetClinic,
-            DoctorSchedule,
             Doctor,
             Review,
+            Appointment,
           ],
           logging: true,
           synchronize: false,
@@ -66,7 +66,7 @@ import { DoctorSchedule } from './modules/doctor-schedule/entities/doctor-schedu
     ReviewModule,
     VetClinicModule,
     DoctorModule,
-    DoctorScheduleModule,
+    AppointmentModule,
     SearchModule,
     S3Module,
   ],

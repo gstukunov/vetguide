@@ -1,23 +1,20 @@
-import {
-  forwardRef,
-  Inject,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Between } from 'typeorm';
 import { Doctor } from './entities/doctor.entity';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { VetClinicService } from '../vet-clinic/vet-clinic.service';
 import { ReviewStatus } from '../review/entities/review.entity';
-import { CreateDoctorScheduleDto } from '../doctor-schedule/dto/doctor-schedule.dto';
-import { DoctorSchedule } from '../doctor-schedule/entities/doctor-schedule.entity';
-import { DoctorScheduleService } from '../doctor-schedule/doctor-schedule.service';
+import {
+  ScheduleData,
+  WeekSchedule,
+  DaySchedule,
+} from './types/schedule-types';
 import { S3Service } from '../s3/s3.service';
 import { ImageProcessingOptions } from '../s3/interfaces/interfaces';
 import { ConfigService } from '@nestjs/config';
+import { Appointment } from '../appointment/entities/appointment.entity';
 
 @Injectable()
 export class DoctorService {
@@ -26,9 +23,9 @@ export class DoctorService {
   constructor(
     @InjectRepository(Doctor)
     private readonly doctorRepo: Repository<Doctor>,
+    @InjectRepository(Appointment)
+    private readonly appointmentRepo: Repository<Appointment>,
     private readonly clinicService: VetClinicService,
-    @Inject(forwardRef(() => DoctorScheduleService)) // Решаем циклическую зависимость
-    private readonly scheduleService: DoctorScheduleService,
     private readonly s3Service: S3Service,
     private readonly configService: ConfigService,
   ) {}
@@ -181,24 +178,140 @@ export class DoctorService {
     return doctor?.clinic?.id === clinicId;
   }
 
-  async getDoctorWithSchedule(id: string): Promise<Doctor> {
-    const doctor = await this.doctorRepo.findOne({
-      where: { id },
-      relations: ['schedules'], // Загружаем связанное расписание
-    });
-
+  async getScheduleForUI(
+    doctorId: string,
+    weeks: number = 4,
+    currentUserId?: string,
+  ): Promise<ScheduleData> {
+    // Проверяем существование врача
+    const doctor = await this.doctorRepo.findOne({ where: { id: doctorId } });
     if (!doctor) {
-      throw new NotFoundException(`Doctor with ID ${id} not found`);
+      throw new NotFoundException('Doctor not found');
     }
 
-    return doctor;
-  }
+    // Устанавливаем начало дня для корректного сравнения дат
+    const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + weeks * 7);
 
-  async addScheduleToDoctor(
-    doctorId: string,
-    dto: CreateDoctorScheduleDto,
-  ): Promise<DoctorSchedule> {
-    return this.scheduleService.createSchedule(doctorId, dto);
+    // Форматируем даты в формат YYYY-MM-DD
+    const startDateStr = startDate.toISOString().split('T')[0];
+    const endDateStr = endDate.toISOString().split('T')[0];
+
+    // Получаем все подтвержденные записи для врача в указанном периоде
+    const appointments = await this.appointmentRepo.find({
+      where: {
+        doctorId,
+        date: Between(startDateStr, endDateStr),
+        status: 'CONFIRMED',
+      },
+      select: ['date', 'timeSlot', 'user_id'],
+      order: { date: 'ASC', timeSlot: 'ASC' },
+    });
+
+    // Группируем записи по датам и отслеживаем, какие из них принадлежат текущему пользователю
+    const appointmentsByDate = new Map<string, Set<string>>();
+    const userAppointmentsByDate = new Map<string, Set<string>>();
+
+    appointments.forEach((appointment) => {
+      const date = String(appointment.date).split('T')[0];
+
+      // Общая карта всех занятых слотов
+      if (!appointmentsByDate.has(date)) {
+        appointmentsByDate.set(date, new Set());
+      }
+      appointmentsByDate.get(date)!.add(appointment.timeSlot);
+
+      // Карта слотов, забронированных текущим пользователем (если пользователь авторизован)
+      if (currentUserId && appointment.user_id === currentUserId) {
+        if (!userAppointmentsByDate.has(date)) {
+          userAppointmentsByDate.set(date, new Set());
+        }
+        userAppointmentsByDate.get(date)!.add(appointment.timeSlot);
+      }
+    });
+
+    // Генерируем временные слоты (по умолчанию 9:00-18:00 с шагом 1 час)
+    // В будущем можно вынести это в настройки врача
+    const workStartHour = 9;
+    const workEndHour = 18;
+    const timeSlots: string[] = [];
+    for (let hour = workStartHour; hour < workEndHour; hour++) {
+      timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
+    }
+
+    // Generate weeks structure
+    const weeksData: Array<WeekSchedule> = [];
+    let currentWeekIndex = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (let weekOffset = 0; weekOffset < weeks; weekOffset++) {
+      const weekStart = new Date(startDate);
+      weekStart.setDate(startDate.getDate() + weekOffset * 7);
+
+      const weekNumber = Math.ceil(
+        (weekStart.getTime() -
+          new Date(weekStart.getFullYear(), 0, 1).getTime()) /
+          (7 * 24 * 60 * 60 * 1000),
+      );
+
+      const days: Array<DaySchedule> = [];
+
+      for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+        const date = new Date(weekStart);
+        date.setDate(weekStart.getDate() + dayOffset);
+        date.setHours(0, 0, 0, 0); // Обнуляем время для корректного сравнения
+
+        const dateStr = date.toISOString().split('T')[0];
+
+        // Получаем занятые слоты для этой даты
+        const bookedSlots = appointmentsByDate.get(dateStr) || new Set();
+        const userBookedSlots =
+          userAppointmentsByDate.get(dateStr) || new Set();
+
+        // Генерируем слоты для этого дня
+        const dayTimeSlots = timeSlots.map((timeSlot) => {
+          const isBooked = bookedSlots.has(timeSlot);
+          const isBookedByCurrentUser = currentUserId
+            ? userBookedSlots.has(timeSlot)
+            : false;
+          return {
+            id: `${doctorId}-${dateStr}-${timeSlot}`, // Генерируем уникальный ID
+            time: timeSlot,
+            available: !isBooked,
+            bookedByCurrentUser: isBookedByCurrentUser || undefined, // Добавляем флаг только если true
+          };
+        });
+
+        const isToday = date.toDateString() === today.toDateString();
+        if (isToday) {
+          currentWeekIndex = weekOffset;
+        }
+
+        days.push({
+          date: new Date(date),
+          dayOfWeek: date.toLocaleDateString('ru-RU', { weekday: 'long' }),
+          dayOfWeekShort: date.toLocaleDateString('ru-RU', {
+            weekday: 'short',
+          }),
+          dayNumber: date.getDate(),
+          isToday,
+          timeSlots: dayTimeSlots,
+        });
+      }
+
+      weeksData.push({
+        weekNumber,
+        days,
+      });
+    }
+
+    return {
+      weeks: weeksData,
+      currentWeekIndex,
+    };
   }
 
   async searchDoctors(query: string): Promise<Doctor[]> {
@@ -345,5 +458,34 @@ export class DoctorService {
       ...doctor,
       clinic,
     };
+  }
+
+  async getBookedTimeslots(
+    doctorId: string,
+    currentUserId?: string,
+  ): Promise<
+    Array<{
+      date: string;
+      timeSlot: string;
+      bookedByCurrentUser?: boolean;
+    }>
+  > {
+    const appointments = await this.appointmentRepo.find({
+      where: {
+        doctorId,
+        status: 'CONFIRMED',
+      },
+      select: ['date', 'timeSlot', 'user_id'],
+      order: { date: 'ASC', timeSlot: 'ASC' },
+    });
+
+    return appointments.map((appointment) => ({
+      date: String(appointment.date).split('T')[0], // Ensure format is YYYY-MM-DD
+      timeSlot: appointment.timeSlot,
+      bookedByCurrentUser:
+        currentUserId && appointment.user_id === currentUserId
+          ? true
+          : undefined,
+    }));
   }
 }

@@ -1,12 +1,14 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import Image from 'next/image';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 
 import clsx from 'clsx';
 
+import { useCreateAppointment } from '@/(shared)/api/hooks/appointments';
 import { useGetDoctor } from '@/(shared)/api/hooks/doctors';
+import { isAuthenticated } from '@/(shared)/api/requestBase';
 import { DogIcon } from '@/(shared)/icons/dog';
 import { AppointmentModal } from '@/(shared)/ui/appointment-modal/index';
 import Button from '@/(shared)/ui/button';
@@ -15,14 +17,19 @@ import Header from '@/(shared)/ui/header';
 import { formatPhoneNumber } from '@/(shared)/ui/inputs/phone-input/model/utils';
 import { ScheduleSelector } from '@/(shared)/ui/schedule-selector';
 import { useScheduleData } from '@/(shared)/ui/schedule-selector/hooks/useScheduleData';
-import { generateMultipleWeeks } from '@/(shared)/ui/schedule-selector/model/utils';
+import {
+  appointmentsToBookedSlots,
+  generateMultipleWeeks,
+} from '@/(shared)/ui/schedule-selector/model/utils';
 
 import styles from './styles.module.scss';
 
 const DoctorPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { data: doctor } = useGetDoctor(id);
+  const router = useRouter();
+  const { data: doctor } = useGetDoctor(id || '');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { mutate: createAppointment } = useCreateAppointment();
 
   const {
     scheduleData,
@@ -32,12 +39,50 @@ const DoctorPage = () => {
     handleDateSelect,
     handleTimeSlotSelect,
     updateWeeks,
+    setCurrentWeekIndex,
   } = useScheduleData();
 
+  // Генерируем расписание клиентской стороны из данных врача и записей (appointments)
   useEffect(() => {
-    const initialWeeks = generateMultipleWeeks(4);
-    updateWeeks(initialWeeks);
-  }, [updateWeeks]);
+    if (doctor) {
+      // Получаем забронированные слоты из bookedTimeslots (имеет bookedByCurrentUser флаг)
+      // Если bookedTimeslots не доступны, используем appointments для обратной совместимости
+      const bookedSlots =
+        doctor.bookedTimeslots ||
+        (doctor.appointments
+          ? appointmentsToBookedSlots(doctor.appointments)
+          : []);
+
+      // Генерируем расписание клиентской стороны (4 недели) с учетом забронированных слотов
+      const { weeks, currentWeekIndex } = generateMultipleWeeks(4, bookedSlots);
+
+      // Устанавливаем неделю, которая содержит сегодня
+      setCurrentWeekIndex(currentWeekIndex);
+      updateWeeks(weeks, currentWeekIndex);
+    }
+  }, [doctor, updateWeeks, setCurrentWeekIndex]);
+
+  // Проверяем, что выбранные дата и время доступны для бронирования
+  const canBookAppointment = useMemo(() => {
+    if (!selectedDate || !selectedTimeSlot || !doctor) return false;
+
+    const selectedDateStr = selectedDate.toISOString().split('T')[0];
+
+    for (const week of scheduleData.weeks) {
+      for (const day of week.days) {
+        const dayDateStr = day.date.toISOString().split('T')[0];
+        if (dayDateStr === selectedDateStr) {
+          const slot = day.timeSlots.find(
+            slot => slot.time === selectedTimeSlot
+          );
+          if (slot && slot.available) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }, [selectedDate, selectedTimeSlot, scheduleData.weeks, doctor]);
 
   const handleDateClick = (date: Date) => {
     handleDateSelect(date);
@@ -58,13 +103,46 @@ const DoctorPage = () => {
   };
 
   const handleConfirmBooking = () => {
-    console.log('Booking confirmed:', {
-      doctor: doctor?.fullName,
-      date: selectedDate,
-      time: selectedTimeSlot,
-    });
-    setIsModalOpen(false);
-    // Here you would typically make an API call to book the appointment
+    // Проверяем авторизацию
+    if (!isAuthenticated()) {
+      router.push('/auth/sign-in');
+      return;
+    }
+
+    if (!selectedDate || !selectedTimeSlot || !doctor || !canBookAppointment) {
+      console.error(
+        'Cannot book appointment: missing data or slot not available'
+      );
+      return;
+    }
+
+    // Форматируем дату в формат YYYY-MM-DD используя локальное время (не UTC)
+    const year = selectedDate.getFullYear();
+    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(selectedDate.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+
+    // Проверяем формат timeSlot (должен быть HH:mm)
+    // selectedTimeSlot уже в формате HH:mm из generateTimeSlots
+
+    createAppointment(
+      {
+        doctorId: doctor.id,
+        date: dateStr, // YYYY-MM-DD format
+        timeSlot: selectedTimeSlot, // HH:mm format
+      },
+      {
+        onSuccess: () => {
+          setIsModalOpen(false);
+          handleTimeSlotSelect('');
+          // Можно добавить уведомление об успешной записи
+        },
+        onError: (error: unknown) => {
+          console.error('Failed to create appointment:', error);
+          // Можно добавить уведомление об ошибке
+        },
+      }
+    );
   };
 
   // Handle modal close - clear time slot selection
