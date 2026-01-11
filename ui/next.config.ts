@@ -7,9 +7,17 @@ const nextConfig: NextConfig = {
   swcMinify: true,
   output: 'standalone',
   images: {
-    domains: ['vetguide.space', 'localhost'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'vetguide.space',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+    ],
   },
-  port: 3000,
   webpack: config => {
     config.resolve.alias = {
       ...config.resolve.alias,

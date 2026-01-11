@@ -1,4 +1,4 @@
-version: "3.8"
+version: "2.2"
 
 services:
   # PostgreSQL Database
@@ -11,7 +11,7 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "127.0.0.1:5432:5432"
+      - "0.0.0.0:5432:5432"
     volumes:
       - postgres_prod_data:/var/lib/postgresql/data
       - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
@@ -52,18 +52,11 @@ services:
     depends_on:
       minio:
         condition: service_healthy
-    volumes:
-      - ./api/scripts/setup-minio-bucket.sh:/setup-minio-bucket.sh:ro
-    environment:
-      MINIO_ALIAS: myminio
-      MINIO_ENDPOINT: http://minio:9000
-      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
-      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
-      MINIO_BUCKET: ${MINIO_BUCKET:-vetguide-uploads}
     entrypoint: >
       /bin/sh -c "
-      chmod +x /setup-minio-bucket.sh &&
-      /setup-minio-bucket.sh;
+      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
+      /usr/bin/mc mb myminio/${MINIO_BUCKET:-vetguide-uploads} --ignore-existing;
+      /usr/bin/mc policy set public myminio/${MINIO_BUCKET:-vetguide-uploads};
       exit 0;
       "
     networks:
@@ -74,6 +67,8 @@ services:
     image: ghcr.io/${GITHUB_REPOSITORY}/vetguide-api:latest
     container_name: vetguide-api-prod
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     environment:
       NODE_ENV: production
       DB_HOST: postgres
@@ -120,6 +115,8 @@ services:
     image: ghcr.io/${GITHUB_REPOSITORY}/vetguide-ui:latest
     container_name: vetguide-ui-prod
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     environment:
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: 1
@@ -164,8 +161,14 @@ services:
       WATCHTOWER_REVIVE_STOPPED: "true"
       WATCHTOWER_POLL_INTERVAL: 300
       WATCHTOWER_LABEL_ENABLE: "true"
+      # Авторизация для GHCR через переменные окружения
+      WATCHTOWER_REGISTRY_USERNAME: ${GITHUB_USERNAME}
+      WATCHTOWER_REGISTRY_PASSWORD: ${GITHUB_TOKEN}
+      # Альтернативный способ для GHCR
+      DOCKER_CONFIG: /root/.docker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - /root/.docker:/root/.docker:ro
     command: >
       --label-enable
       --cleanup
