@@ -1,0 +1,44 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.label {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--primary-color-text);
+}
+
+.textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--tertiary-color-bg);
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--primary-color-text);
+  background-color: var(--tertiary-color-bg);
+  resize: vertical;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary-color-text);
+    background-color: white;
+  }
+
+  &::placeholder {
+    color: var(--secondary-color-text);
+  }
+
+  &.error {
+    border-color: #ef4444;
+  }
+}
+
+.errorText {
+  font-size: 14px;
+  color: #ef4444;
+}

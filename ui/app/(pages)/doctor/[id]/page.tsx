@@ -12,8 +12,10 @@ import {
   DoctorDescription,
   DoctorHeader,
 } from '@/(features)/doctor-page';
+import { ReviewModal, ReviewsList } from '@/(features)/reviews';
 import { useConfirmBooking } from '@/(shared)/api/hooks/appointments';
 import { useGetDoctor } from '@/(shared)/api/hooks/doctors';
+import { useCreateReview } from '@/(shared)/api/hooks/reviews';
 import { Footer } from '@/(shared)/ui/footer';
 import Header from '@/(shared)/ui/header';
 import { useScheduleData } from '@/(shared)/ui/schedule-selector/hooks/useScheduleData';
@@ -28,6 +30,8 @@ const DoctorPage = () => {
   const { id } = useParams<{ id: string }>();
   const { data: doctor } = useGetDoctor(id || '');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const { mutate: createReview } = useCreateReview();
 
   const {
     scheduleData,
@@ -118,6 +122,28 @@ const DoctorPage = () => {
     handleTimeSlotSelect('');
   };
 
+  const handleReviewSubmit = (data: {
+    title: string;
+    description: string;
+    rating: number;
+  }) => {
+    if (!doctor) return;
+
+    createReview(
+      {
+        doctorId: doctor.id,
+        title: data.title,
+        description: data.description,
+        rating: data.rating,
+      },
+      {
+        onSuccess: () => {
+          setIsReviewModalOpen(false);
+        },
+      }
+    );
+  };
+
   return (
     <div
       className={clsx(styles.doctorPage, { [styles.modalOpen]: isModalOpen })}
@@ -146,6 +172,17 @@ const DoctorPage = () => {
               />
             </div>
             <div className={styles.doctorLine} />
+            {doctor && (
+              <div className={styles.reviewsSection}>
+                <ReviewsList
+                  reviews={doctor?.reviews}
+                  onLeaveReview={() => setIsReviewModalOpen(true)}
+                  showAllLink={false}
+                  maxItems={5}
+                />
+              </div>
+            )}
+            <div className={clsx(styles.doctorLine, styles.lastDoctorLine)} />
           </div>
         </div>
       </div>
@@ -165,6 +202,15 @@ const DoctorPage = () => {
           onDateSelect={handleDateSelect}
           onTimeSlotSelect={handleTimeSlotSelect}
           onWeekChange={handleWeekChange}
+        />
+      )}
+
+      {doctor && (
+        <ReviewModal
+          isOpen={isReviewModalOpen}
+          onClose={() => setIsReviewModalOpen(false)}
+          doctor={doctor}
+          onSubmit={handleReviewSubmit}
         />
       )}
     </div>

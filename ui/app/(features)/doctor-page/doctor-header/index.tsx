@@ -29,7 +29,10 @@ export const DoctorHeader: React.FC<DoctorHeaderProps> = ({ doctor }) => {
         <div className={styles.doctorName}>{doctor?.fullName}</div>
         <div className={styles.doctorSpecializationContainer}>
           {doctor?.specialization?.map(spec => (
-            <div key={`doctor-spec-${spec}`} className={styles.doctorSpecialization}>
+            <div
+              key={`doctor-spec-${spec}`}
+              className={styles.doctorSpecialization}
+            >
               {spec}
             </div>
           ))}
