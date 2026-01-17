@@ -1,8 +1,7 @@
+import { Doctor, VetClinic } from '@/(shared)/api/api';
 import type { WeekSchedule } from '@/(shared)/ui/schedule-selector/model/types';
 
-import { Doctor, VetClinic } from '../../../api/api';
-
-export type AppointmentModalProps = {
+export type AppointmentBookingProps = {
   isOpen: boolean;
   onClose: () => void;
   doctor: Doctor;

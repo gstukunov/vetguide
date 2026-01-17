@@ -1,17 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import Image from 'next/image';
 
-import clsx from 'clsx';
-
 import { DogIcon } from '@/(shared)/icons/dog';
 import Button from '@/(shared)/ui/button';
+import { Modal } from '@/(shared)/ui/modal';
 import { ScheduleSelector } from '@/(shared)/ui/schedule-selector';
 
-import { AppointmentModalProps } from './model/types';
+import { AppointmentBookingProps } from './model/types';
 import styles from './styles.module.scss';
 
-export const AppointmentModal: React.FC<AppointmentModalProps> = ({
+export const AppointmentBooking: React.FC<AppointmentBookingProps> = ({
   isOpen,
   onClose,
   doctor,
@@ -25,27 +24,9 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
   onTimeSlotSelect,
   onWeekChange,
 }) => {
-  const [isClosing, setIsClosing] = useState(false);
-
-  const handleClose = () => {
-    setIsClosing(true);
-    setTimeout(() => {
-      setIsClosing(false);
-      onClose();
-    }, 300); // Match animation duration
-  };
-
-  if (!isOpen) return null;
-
   return (
-    <div
-      className={clsx(styles.modalOverlay, { [styles.closing]: isClosing })}
-      onClick={handleClose}
-    >
-      <div
-        className={clsx(styles.modal, { [styles.closing]: isClosing })}
-        onClick={e => e.stopPropagation()}
-      >
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <div className={styles.appointmentContent}>
         <div className={styles.doctorInfo}>
           <div className={styles.doctorPhoto}>
             {doctor?.photoUrl ? (
@@ -103,11 +84,7 @@ export const AppointmentModal: React.FC<AppointmentModalProps> = ({
             Записаться на прием
           </Button>
         </div>
-
-        <button className={styles.closeButton} onClick={handleClose}>
-          ×
-        </button>
       </div>
-    </div>
+    </Modal>
   );
 };

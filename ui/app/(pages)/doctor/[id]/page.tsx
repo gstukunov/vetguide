@@ -1,21 +1,21 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 
-import Image from 'next/image';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 
-import clsx from 'clsx';
+import { clsx } from 'clsx';
 
-import { useCreateAppointment } from '@/(shared)/api/hooks/appointments';
+import { AppointmentBooking } from '@/(features)/appointment';
+import {
+  AppointmentSection,
+  ClinicInfo,
+  DoctorDescription,
+  DoctorHeader,
+} from '@/(features)/doctor-page';
+import { useConfirmBooking } from '@/(shared)/api/hooks/appointments';
 import { useGetDoctor } from '@/(shared)/api/hooks/doctors';
-import { isAuthenticated } from '@/(shared)/api/requestBase';
-import { DogIcon } from '@/(shared)/icons/dog';
-import { AppointmentModal } from '@/(shared)/ui/appointment-modal/index';
-import Button from '@/(shared)/ui/button';
 import { Footer } from '@/(shared)/ui/footer';
 import Header from '@/(shared)/ui/header';
-import { formatPhoneNumber } from '@/(shared)/ui/inputs/phone-input/model/utils';
-import { ScheduleSelector } from '@/(shared)/ui/schedule-selector';
 import { useScheduleData } from '@/(shared)/ui/schedule-selector/hooks/useScheduleData';
 import {
   appointmentsToBookedSlots,
@@ -26,10 +26,8 @@ import styles from './styles.module.scss';
 
 const DoctorPage = () => {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
   const { data: doctor } = useGetDoctor(id || '');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { mutate: createAppointment } = useCreateAppointment();
 
   const {
     scheduleData,
@@ -102,48 +100,16 @@ const DoctorPage = () => {
     }
   };
 
-  const handleConfirmBooking = () => {
-    // Проверяем авторизацию
-    if (!isAuthenticated()) {
-      router.push('/auth/sign-in');
-      return;
-    }
-
-    if (!selectedDate || !selectedTimeSlot || !doctor || !canBookAppointment) {
-      console.error(
-        'Cannot book appointment: missing data or slot not available'
-      );
-      return;
-    }
-
-    // Форматируем дату в формат YYYY-MM-DD используя локальное время (не UTC)
-    const year = selectedDate.getFullYear();
-    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-    const day = String(selectedDate.getDate()).padStart(2, '0');
-    const dateStr = `${year}-${month}-${day}`;
-
-    // Проверяем формат timeSlot (должен быть HH:mm)
-    // selectedTimeSlot уже в формате HH:mm из generateTimeSlots
-
-    createAppointment(
-      {
-        doctorId: doctor.id,
-        date: dateStr, // YYYY-MM-DD format
-        timeSlot: selectedTimeSlot, // HH:mm format
-      },
-      {
-        onSuccess: () => {
-          setIsModalOpen(false);
-          handleTimeSlotSelect('');
-          // Можно добавить уведомление об успешной записи
-        },
-        onError: (error: unknown) => {
-          console.error('Failed to create appointment:', error);
-          // Можно добавить уведомление об ошибке
-        },
-      }
-    );
-  };
+  const { confirmBooking } = useConfirmBooking({
+    doctor,
+    selectedDate,
+    selectedTimeSlot,
+    canBookAppointment,
+    onSuccess: () => {
+      setIsModalOpen(false);
+      handleTimeSlotSelect('');
+    },
+  });
 
   // Handle modal close - clear time slot selection
   const handleModalClose = () => {
@@ -161,79 +127,23 @@ const DoctorPage = () => {
       </div>
       <div className={styles.doctorBlock}>
         <div className={styles.doctorInfo}>
-          <div className={styles.doctorPhotoContainer}>
-            <div className={styles.doctorPhoto}>
-              {doctor && doctor.photoUrl ? (
-                <Image
-                  src={doctor?.photoUrl}
-                  className={styles.avatarImage}
-                  alt={doctor.fullName}
-                  width={100}
-                  height={100}
-                />
-              ) : (
-                <div className={styles.avatar}>
-                  <DogIcon />
-                </div>
-              )}
-            </div>
-            <div className={styles.doctorNameContainer}>
-              <div className={styles.doctorName}>{doctor?.fullName}</div>
-              <div className={styles.doctorSpecializationContainer}>
-                {doctor?.specialization?.map(spec => (
-                  <div
-                    key={`doctor-spec-${spec}`}
-                    className={styles.doctorSpecialization}
-                  >
-                    {spec}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className={styles.doctorDescriptionContainer}>
-            <div className={styles.doctorAbout}>О враче</div>
-            <div className={styles.doctorDescription}>
-              {doctor?.description}
-            </div>
-          </div>
+          <DoctorHeader doctor={doctor} />
+          <DoctorDescription doctor={doctor} />
           <div className={styles.doctorLineContainer}>
             <div className={styles.doctorLine} />
-            <div className={styles.doctorClinicContainer}>
-              <div className={styles.doctorClinicTitle}>Запись на прием</div>
-              <div className={styles.doctorClinicInfoWithLogo}>
-                <div className={styles.clinicAvatar}>Лого</div>
-                <div className={styles.doctorClinic}>
-                  {doctor?.clinic?.name}
-                </div>
-              </div>
-              <div className={styles.doctorClinicAddressContainer}>
-                <div className={styles.doctorClinicAddressHeader}>Адрес</div>
-                <div className={styles.doctorClinicAddress}>
-                  {doctor?.clinic?.address}
-                </div>
-              </div>
-              <div className={styles.doctorClinicAddressContainer}>
-                <div className={styles.doctorClinicAddressHeader}>Телефон</div>
-                <a
-                  href={`tel:${doctor?.clinic?.phone}`}
-                  className={styles.doctorClinicPhone}
-                >
-                  {formatPhoneNumber(doctor?.clinic?.phone || '')}
-                </a>
-              </div>
-              <div className={styles.scheduleSection}>
-                <ScheduleSelector
-                  weeks={scheduleData.weeks}
-                  selectedDate={selectedDate}
-                  selectedTimeSlot={selectedTimeSlot}
-                  onDateSelect={handleDateClick}
-                  onTimeSlotSelect={handleTimeSlotClick}
-                  onWeekChange={handleWeekChange}
-                  currentWeekIndex={scheduleData.currentWeekIndex}
-                  title="Доступные даты"
-                />
-              </div>
+            <div className={styles.appointmentContainer}>
+              <div className={styles.appointmentTitle}>Запись на прием</div>
+              <ClinicInfo clinic={doctor?.clinic} />
+              <AppointmentSection
+                weeks={scheduleData.weeks}
+                currentWeekIndex={scheduleData.currentWeekIndex}
+                selectedDate={selectedDate}
+                selectedTimeSlot={selectedTimeSlot}
+                onDateSelect={handleDateClick}
+                onTimeSlotSelect={handleTimeSlotClick}
+                onWeekChange={handleWeekChange}
+                onMobileBooking={handleMobileBooking}
+              />
             </div>
             <div className={styles.doctorLine} />
           </div>
@@ -241,27 +151,15 @@ const DoctorPage = () => {
       </div>
       <Footer />
 
-      {selectedDate && selectedTimeSlot && (
-        <div className={styles.fixedBottomButton}>
-          <Button
-            colorType="secondary"
-            className={styles.bookAppointmentButton}
-            onClick={handleMobileBooking}
-          >
-            Записаться на прием
-          </Button>
-        </div>
-      )}
-
       {doctor?.clinic && doctor && (
-        <AppointmentModal
+        <AppointmentBooking
           isOpen={isModalOpen}
           onClose={handleModalClose}
           doctor={doctor}
           clinic={doctor?.clinic}
           selectedDate={selectedDate}
           selectedTimeSlot={selectedTimeSlot}
-          onConfirmBooking={handleConfirmBooking}
+          onConfirmBooking={confirmBooking}
           weeks={scheduleData.weeks}
           currentWeekIndex={scheduleData.currentWeekIndex}
           onDateSelect={handleDateSelect}
