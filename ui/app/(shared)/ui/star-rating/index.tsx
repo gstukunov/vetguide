@@ -4,15 +4,8 @@ import clsx from 'clsx';
 
 import { StarIcon } from '@/(shared)/icons/star';
 
+import { StarRatingProps } from './model/types';
 import styles from './styles.module.scss';
-
-export type StarRatingProps = {
-  rating: number;
-  onRatingChange?: (rating: number) => void;
-  readonly?: boolean;
-  size?: 'small' | 'medium' | 'large';
-  color?: string;
-};
 
 export const StarRating: React.FC<StarRatingProps> = ({
   rating,

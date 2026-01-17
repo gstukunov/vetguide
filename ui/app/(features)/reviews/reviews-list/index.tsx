@@ -1,9 +1,9 @@
 import React from 'react';
 
 import Button from '@/(shared)/ui/button';
-import { StarRating } from '@/(shared)/ui/star-rating';
 
 import { ReviewsListProps } from './model/types';
+import { StarRating } from './rating';
 import styles from './styles.module.scss';
 
 export const ReviewsList: React.FC<ReviewsListProps> = ({
@@ -85,12 +85,9 @@ export const ReviewsList: React.FC<ReviewsListProps> = ({
                       </div>
                     </div>
                   </div>
-                  <StarRating
-                    rating={review.rating}
-                    readonly
-                    size="small"
-                    color="var(--secondary-color-bg)"
-                  />
+                  <div>
+                    <StarRating rating={review.rating} />
+                  </div>
                 </div>
                 <div className={styles.reviewText}>{review.description}</div>
               </div>

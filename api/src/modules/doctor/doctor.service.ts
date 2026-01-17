@@ -15,6 +15,7 @@ import { S3Service } from '../s3/s3.service';
 import { ImageProcessingOptions } from '../s3/interfaces/interfaces';
 import { ConfigService } from '@nestjs/config';
 import { Appointment } from '../appointment/entities/appointment.entity';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class DoctorService {
@@ -28,6 +29,7 @@ export class DoctorService {
     private readonly clinicService: VetClinicService,
     private readonly s3Service: S3Service,
     private readonly configService: ConfigService,
+    private readonly userService: UserService,
   ) {}
 
   async create(createDto: CreateDoctorDto): Promise<Doctor> {
@@ -141,14 +143,34 @@ export class DoctorService {
   async findOne(id: string): Promise<Doctor> {
     const doctor = await this.doctorRepo.findOne({
       where: { id },
-      relations: ['reviews'],
+      relations: ['reviews', 'clinic'],
     });
+    const filteredReviews = doctor?.reviews.filter((review) => review.status === 'VERIFIED') || [];
+    const reviewAuthorsReq = filteredReviews.map((review) => this.userService.findById(review.userId));
+
+    const reviewsAuthors = await Promise.allSettled(reviewAuthorsReq).then((author) => author.filter((val) => val.status === 'fulfilled'));
+
+    const reviews = filteredReviews.reduce((prev, curr) => {
+      const author = reviewsAuthors.find((author) => author.value.id === curr.userId)?.value
+      
+      return [
+        ...prev, 
+        { 
+          id: curr.id, 
+          description: curr.description, 
+          rating: curr.rating, 
+          status: curr.status,
+          createdAt: curr.createdAt,
+          user: { fullName: author?.fullName,  }
+        }
+      ];
+    }, new Array())
 
     if (!doctor) {
       throw new NotFoundException(`Doctor with ID ${id} not found`);
     }
 
-    return doctor;
+    return {...doctor, reviews: reviews};
   }
 
   // Расчет среднего рейтинга
